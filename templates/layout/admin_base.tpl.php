@@ -20,9 +20,20 @@
                 <a href="/logout/">Logout</a>
             </div>
         </div>
+        <span class="timezone-display"></span>
     </div>
     <div class="PageWrapper">
         <?= $page_content ?>
     </div>
+    <script>
+        // Display timezone at the top right
+        document.addEventListener('DOMContentLoaded', function() {
+            var timezoneDisplay = document.querySelector('.timezone-display');
+            if (timezoneDisplay) {
+                var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                timezoneDisplay.textContent = timezone;
+            }
+        });
+    </script>
 </body>
 </html>

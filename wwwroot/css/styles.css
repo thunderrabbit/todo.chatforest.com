@@ -11,6 +11,7 @@ body {
     padding: 0.75em 1em;
     border-bottom: 2px solid #b0d4ec;
     text-align: center;
+    position: relative;
 }
 
 .NavBar a {
@@ -22,6 +23,15 @@ body {
 
 .NavBar a:hover {
     text-decoration: underline;
+}
+
+.timezone-display {
+    position: absolute;
+    right: 1em;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #555;
+    font-size: 0.9em;
 }
 
 .PageWrapper {
