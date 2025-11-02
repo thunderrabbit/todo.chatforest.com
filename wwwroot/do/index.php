@@ -220,7 +220,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved']);
+            // Generate new CSRF token for next request
+            $newToken = $csrfProtect->getToken("todo_form_{$project}");
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved', 'csrf_token' => $newToken]);
         }
         exit;
     }

@@ -193,11 +193,22 @@ class TodoRenderer
                             if (!response.ok) {
                                 throw new Error("Save failed");
                             }
+                            return response.json();
+                        })
+                        .then(function(data) {
                             // Success - keep the checkbox state
                             checkbox.disabled = false;
                             todoItem.classList.remove("saving");
                             // Remove any existing error state
                             todoItem.classList.remove("todo-error");
+
+                            // Update CSRF token in all forms on the page
+                            if (data.csrf_token) {
+                                var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
+                                allCsrfInputs.forEach(function(csrfInput) {
+                                    csrfInput.value = data.csrf_token;
+                                });
+                            }
                         })
                         .catch(function(error) {
                             // Failure - revert checkbox
@@ -273,9 +284,20 @@ class TodoRenderer
                                 if (!response.ok) {
                                     throw new Error("Save failed");
                                 }
+                                return response.json();
+                            })
+                            .then(function(data) {
                                 // Success - remove saving state
                                 todoList.classList.remove("saving");
                                 todoList.classList.remove("todo-error");
+
+                                // Update CSRF token in all forms on the page
+                                if (data.csrf_token) {
+                                    var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
+                                    allCsrfInputs.forEach(function(csrfInput) {
+                                        csrfInput.value = data.csrf_token;
+                                    });
+                                }
                             })
                             .catch(function(error) {
                                 // Failure - show error state
