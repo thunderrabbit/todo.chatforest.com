@@ -148,7 +148,7 @@ body {
 }
 
 .todo-editable {
-    flex: 1;
+    display: contents;
 }
 
 .todo-editing {
