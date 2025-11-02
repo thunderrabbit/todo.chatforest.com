@@ -149,6 +149,14 @@ class TodoRenderer
                         datetimeInput.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
                     }
                 });
+
+                // Auto-save when checkbox is clicked
+                var checkboxes = todoForm.querySelectorAll(".todo-checkbox");
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.addEventListener("change", function() {
+                        todoForm.submit();
+                    });
+                });
             }
         </script>';
 
