@@ -144,7 +144,7 @@ class TodoReader
                 foreach ($dates as $date) {
                     $description = str_replace($date, '', $description);
                 }
-                $description = str_replace('LINK_PLACEHOLDER', $linkText, trim($description));
+                $description = str_replace('LINK_PLACEHOLDER', '[[' . $linkText . ']]', trim($description));
             }
         } else {
             // No link, just dates and description
