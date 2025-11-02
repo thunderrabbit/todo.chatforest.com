@@ -10,12 +10,13 @@ This is a lightweight todo list system designed for personal use. Each user gets
 
 ## 📂 File Structure
 
-Todo files are stored in `todos/(username)/` adjacent to `wwwroot`, ensuring they remain private and not accessible via web browsers.
+Todo files are stored in `todos/(username)/YYYY/` adjacent to `wwwroot`, ensuring they remain private and not accessible via web browsers.
 
-Each project gets its own Markdown file. For example:
-- `todos/rob/create_todo_website.md`
-- `todos/rob/book_travel.md`
-- `todos/rob/learn_piano.md`
+Each year gets its own directory, with a `main.md` file and other project files at the same level. For example:
+- `todos/rob/2025/main.md`
+- `todos/rob/2025/create_website_sublists.md`
+- `todos/rob/2025/book_travel.md`
+- `todos/rob/2025/learn_piano.md`
 
 ## ✨ Todo Format
 
@@ -35,6 +36,27 @@ Each todo follows this simple format:
 - **Checkbox**: `[ ]` for unfinished, `[x]` for finished
 - **Todo text**: Description of the task
 - **Date at the end**: When the todo was completed (only appears for finished todos)
+
+### Linked Todos (Sub-lists)
+
+You can link to sub-lists in separate markdown files using wiki-style double brackets:
+
+**Unfinished linked todo:**
+```markdown
+- [ ] 02-nov-2025 [[Create website sublists]]
+```
+
+**Finished linked todo:**
+```markdown
+- [x] 02-nov-2025 [[Create website sublists]] 05-nov-2025
+```
+
+**How it works:**
+- Double brackets `[[...]]` create a link to another markdown file in the same year directory
+- Filename is automatically derived from the link text (lowercase, spaces converted to underscores)
+- The checkbox marks the parent todo complete and does **not** affect items in the sub-list
+- Web interface renders both a checkbox and a separate clickable link
+- This creates a hierarchical structure similar to Notion pages, where you can organize complex projects into manageable sub-lists
 
 ## 🎯 Features
 
