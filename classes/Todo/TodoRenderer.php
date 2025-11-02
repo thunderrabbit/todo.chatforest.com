@@ -235,6 +235,25 @@ class TodoRenderer
                     var sortable = new Sortable(todoList, {
                         handle: ".drag-handle",
                         animation: 150,
+                        onChoose: function(e) {
+                            // When drag starts, add listeners to all dropzones
+                            var dropzones = todoList.querySelectorAll(".todo-dropzone");
+                            dropzones.forEach(function(dropzone) {
+                                dropzone.addEventListener("dragover", function() {
+                                    this.classList.add("sortable-drag-over");
+                                });
+                                dropzone.addEventListener("dragleave", function() {
+                                    this.classList.remove("sortable-drag-over");
+                                });
+                            });
+                        },
+                        onUnchoose: function(e) {
+                            // When drag ends, remove listeners from all dropzones
+                            var dropzones = todoList.querySelectorAll(".todo-dropzone");
+                            dropzones.forEach(function(dropzone) {
+                                dropzone.classList.remove("sortable-drag-over");
+                            });
+                        },
                         onEnd: function() {
                             // Reorder form inputs to match new DOM order
                             var todoItems = todoList.querySelectorAll(".todo-item");

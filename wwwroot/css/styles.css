@@ -186,6 +186,12 @@ body {
     margin: 0 0.5em 0 0;
 }
 
+.todo-description.todo-dropzone.sortable-drag-over {
+    background-color: #e6ffe6;
+    border-color: #006600;
+    border-style: solid;
+}
+
 .todo-link {
     color: #0366a8;
     text-decoration: none;
