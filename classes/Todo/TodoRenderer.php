@@ -236,19 +236,27 @@ class TodoRenderer
                         handle: ".drag-handle",
                         animation: 150,
                         onChoose: function(e) {
-                            // When drag starts, add listeners to all dropzones
+                            // Clear any previous highlights
                             var dropzones = todoList.querySelectorAll(".todo-dropzone");
                             dropzones.forEach(function(dropzone) {
-                                dropzone.addEventListener("dragover", function() {
-                                    this.classList.add("sortable-drag-over");
-                                });
-                                dropzone.addEventListener("dragleave", function() {
-                                    this.classList.remove("sortable-drag-over");
-                                });
+                                dropzone.classList.remove("sortable-drag-over");
                             });
                         },
+                        onMove: function(e) {
+                            // Highlight the dropzone if dragging over it
+                            var dropzones = todoList.querySelectorAll(".todo-dropzone");
+                            dropzones.forEach(function(dropzone) {
+                                dropzone.classList.remove("sortable-drag-over");
+                            });
+
+                            // Check if we\'re dragging over a dropzone using the related item (the item being hovered)
+                            if (e.related && e.related.querySelector(".todo-dropzone")) {
+                                var dropzone = e.related.querySelector(".todo-dropzone");
+                                dropzone.classList.add("sortable-drag-over");
+                            }
+                        },
                         onUnchoose: function(e) {
-                            // When drag ends, remove listeners from all dropzones
+                            // When drag ends, remove highlights from all dropzones
                             var dropzones = todoList.querySelectorAll(".todo-dropzone");
                             dropzones.forEach(function(dropzone) {
                                 dropzone.classList.remove("sortable-drag-over");
