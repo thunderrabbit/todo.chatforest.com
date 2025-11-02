@@ -62,6 +62,9 @@ class TodoRenderer
         }
         $html .= '">';
 
+        // Drag handle (six dots)
+        $html .= '<span class="drag-handle">⋮⋮</span>';
+
         // Checkbox
         $html .= '<input type="checkbox" class="todo-checkbox"';
         $html .= ' name="todo[' . $index . ']"';
@@ -100,6 +103,8 @@ class TodoRenderer
 
         // Hidden inputs to preserve todo data
         $html .= '<input type="hidden" name="todo_data[' . $index . '][description]" value="' . htmlspecialchars($todo['description']) . '">';
+        $html .= '<input type="hidden" name="todo_data[' . $index . '][createDate]" value="' . htmlspecialchars($todo['createDate'] ?? '') . '">';
+        $html .= '<input type="hidden" name="todo_data[' . $index . '][completeDate]" value="' . htmlspecialchars($todo['completeDate'] ?? '') . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][hasLink]" value="' . ($todo['hasLink'] ? '1' : '0') . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][linkText]" value="' . htmlspecialchars($todo['linkText']) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][linkFile]" value="' . htmlspecialchars($todo['linkFile']) . '">';
@@ -157,6 +162,50 @@ class TodoRenderer
                         todoForm.submit();
                     });
                 });
+
+                // Initialize sortable drag and drop
+                var todoList = todoForm.querySelector(".todo-list");
+                if (todoList && typeof Sortable !== "undefined") {
+                    var sortable = new Sortable(todoList, {
+                        handle: ".drag-handle",
+                        animation: 150,
+                        onEnd: function() {
+                            // Reorder form inputs to match new DOM order
+                            var todoItems = todoList.querySelectorAll(".todo-item");
+                            var newIndex = 0;
+                            todoItems.forEach(function(item) {
+                                // Get the actual form index from the checkbox
+                                var checkbox = item.querySelector(".todo-checkbox");
+                                if (checkbox) {
+                                    var oldIndex = checkbox.name.match(/\[(\d+)\]/)[1];
+
+                                    // Update checkbox name
+                                    checkbox.name = "todo[" + newIndex + "]";
+                                    checkbox.id = "todo-" + newIndex;
+
+                                    // Update label for
+                                    var label = item.querySelector("label");
+                                    if (label) {
+                                        label.setAttribute("for", "todo-" + newIndex);
+                                    }
+
+                                    // Update all hidden inputs
+                                    var hiddenInputs = item.querySelectorAll("input[type=hidden]");
+                                    hiddenInputs.forEach(function(hidden) {
+                                        if (hidden.name.startsWith("todo_data[" + oldIndex + "]")) {
+                                            var newName = hidden.name.replace(/^todo_data\[\d+\]/, "todo_data[" + newIndex + "]");
+                                            hidden.name = newName;
+                                        }
+                                    });
+                                }
+                                newIndex++;
+                            });
+
+                            // Auto-save after reordering
+                            todoForm.submit();
+                        }
+                    });
+                }
             }
         </script>';
 

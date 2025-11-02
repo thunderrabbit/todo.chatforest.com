@@ -164,42 +164,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
     if (!$csrfProtect->validateToken($csrf_token)) {
         $error_message = "Invalid security token. Please try again.";
     } else {
-        // Read existing todos
-        try {
-            $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
-            $existingTodos = $todoReader->parseTodos($rawContent);
-        } catch (\Exception $e) {
-            $existingTodos = [];
-        }
-
         // Update todo completion status based on form submission
         $todos = [];
         $checked = $_POST['todo'] ?? [];
 
         foreach ($_POST['todo_data'] as $index => $todoData) {
-            $todo = $existingTodos[$index] ?? null;
-            if ($todo) {
-                // Update completion status
-                $todo['isComplete'] = isset($checked[$index]);
+            // Build todo from form data
+            $todo = [
+                'description' => $todoData['description'] ?? '',
+                'createDate' => $todoData['createDate'] ?? '',
+                'completeDate' => $todoData['completeDate'] ?? '',
+                'hasLink' => !empty($todoData['hasLink']),
+                'linkText' => $todoData['linkText'] ?? '',
+                'linkFile' => $todoData['linkFile'] ?? '',
+            ];
 
-                // Update completion date if just completed
-                if ($todo['isComplete'] && empty($existingTodos[$index]['isComplete'])) {
-                    // Use current timestamp for completion
-                    $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
-                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+            // Update completion status
+            $todo['isComplete'] = isset($checked[$index]);
 
-                    try {
-                        $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
-                        $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
-                    } catch (\Exception $e) {
-                        $todo['completeDate'] = date('H:i:s d-M-Y');
-                    }
-                } elseif (!$todo['isComplete']) {
-                    $todo['completeDate'] = null;
+            // Update completion date if just completed
+            if ($todo['isComplete'] && empty($todoData['completeDate'])) {
+                // Use current timestamp for completion
+                $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+                $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+
+                try {
+                    $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
+                    $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
+                } catch (\Exception $e) {
+                    $todo['completeDate'] = date('H:i:s d-M-Y');
                 }
-
-                $todos[] = $todo;
+            } elseif (!$todo['isComplete']) {
+                $todo['completeDate'] = '';
             }
+
+            $todos[] = $todo;
         }
 
         // Write back to file

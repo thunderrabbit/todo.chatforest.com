@@ -82,6 +82,27 @@ body {
     align-items: flex-start;
 }
 
+.todo-item.sortable-ghost {
+    opacity: 0.4;
+    background-color: #e8f4ff;
+}
+
+.drag-handle {
+    cursor: grab;
+    padding: 0 8px;
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
+    color: #666;
+    display: flex;
+    align-items: center;
+    margin-right: 0.75em;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
 .todo-item.todo-complete {
     opacity: 0.7;
     background-color: #f8f8f8;
