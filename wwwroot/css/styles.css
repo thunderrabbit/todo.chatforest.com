@@ -118,6 +118,26 @@ body {
     background-color: #f8f8f8;
 }
 
+.todo-item.todo-error {
+    background-color: #ffe6e6;
+    border-color: #ff9999;
+    animation: todo-error-flash 0.5s;
+}
+
+@keyframes todo-error-flash {
+    0%, 100% {
+        background-color: #ffe6e6;
+    }
+    50% {
+        background-color: #ffcccc;
+    }
+}
+
+.todo-item.saving {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 .todo-item label {
     display: flex;
     align-items: center;

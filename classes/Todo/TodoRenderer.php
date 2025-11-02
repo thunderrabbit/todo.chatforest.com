@@ -163,12 +163,54 @@ class TodoRenderer
                     setTimezoneAndDatetime(todoForm);
                 });
 
-                // Auto-save when checkbox is clicked
+                // Auto-save when checkbox is clicked via AJAX
                 var checkboxes = todoForm.querySelectorAll(".todo-checkbox");
                 checkboxes.forEach(function(checkbox) {
-                    checkbox.addEventListener("change", function() {
+                    checkbox.addEventListener("change", function(e) {
+                        var checkbox = e.target;
+                        var todoItem = checkbox.closest(".todo-item");
+                        var originalChecked = checkbox.checked; // After change event, this is the NEW state
+
+                        // Set timezone/datetime
                         setTimezoneAndDatetime(todoForm);
-                        todoForm.submit();
+
+                        // Build FormData for submission
+                        var formData = new FormData(todoForm);
+
+                        // Disable checkbox during save
+                        checkbox.disabled = true;
+                        todoItem.classList.add("saving");
+
+                        // Send AJAX request
+                        fetch(todoForm.action, {
+                            method: "POST",
+                            headers: {
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: formData
+                        })
+                        .then(function(response) {
+                            if (!response.ok) {
+                                throw new Error("Save failed");
+                            }
+                            // Success - keep the checkbox state
+                            checkbox.disabled = false;
+                            todoItem.classList.remove("saving");
+                            // Remove any existing error state
+                            todoItem.classList.remove("todo-error");
+                        })
+                        .catch(function(error) {
+                            // Failure - revert checkbox
+                            checkbox.checked = !originalChecked;
+                            checkbox.disabled = false;
+                            todoItem.classList.remove("saving");
+                            // Show error state
+                            todoItem.classList.add("todo-error");
+                            // Remove error state after animation
+                            setTimeout(function() {
+                                todoItem.classList.remove("todo-error");
+                            }, 2000);
+                        });
                     });
                 });
 

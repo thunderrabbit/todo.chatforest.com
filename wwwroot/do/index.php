@@ -161,6 +161,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_POST['todo_data']) && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';
 
+    // Check if this is an AJAX request
+    $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
     if (!$csrfProtect->validateToken($csrf_token)) {
         $error_message = "Invalid security token. Please try again.";
     } else {
@@ -208,6 +211,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
         } catch (\Exception $e) {
             $error_message = "Error saving todos: " . $e->getMessage();
         }
+    }
+
+    // If AJAX request, return JSON and exit
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        if (!empty($error_message)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $error_message]);
+        } else {
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved']);
+        }
+        exit;
     }
 }
 
