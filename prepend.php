@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Gimme todo.chatforest.com";
+const SENTIMENTAL_VERSION = "Gimme Drag and Drop";
 
 # write errors to screen
 ini_set('display_errors', 1);
