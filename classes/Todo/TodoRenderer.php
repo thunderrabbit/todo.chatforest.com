@@ -80,7 +80,11 @@ class TodoRenderer
         $html .= '<span class="todo-editable" data-index="' . $index . '" data-createdate="' . htmlspecialchars($createDate ?? '') . '" data-description="' . htmlspecialchars($todo['description']) . '" data-completedate="' . htmlspecialchars($completeDate ?? '') . '">';
 
         // Description with optional link
-        $html .= '<span class="todo-description">';
+        $descClass = 'todo-description';
+        if ($todo['hasLink']) {
+            $descClass .= ' todo-dropzone';
+        }
+        $html .= '<span class="' . $descClass . '">';
         if ($todo['hasLink']) {
             $linkText = htmlspecialchars($todo['linkText']);
             $linkUrl = "/do/{$todo['linkFile']}";

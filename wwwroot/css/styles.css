@@ -179,6 +179,13 @@ body {
     align-items: center;
 }
 
+.todo-description.todo-dropzone {
+    border: 2px dashed #0366a8;
+    border-radius: 4px;
+    padding: 0.25em 0.5em;
+    margin: 0 0.5em 0 0;
+}
+
 .todo-link {
     color: #0366a8;
     text-decoration: none;
