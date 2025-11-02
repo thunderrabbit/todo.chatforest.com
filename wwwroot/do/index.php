@@ -51,6 +51,78 @@ if (empty($pathParts)) {
     }
 }
 
+// Handle adding new todo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    if (!$csrfProtect->validateToken($csrf_token)) {
+        $error_message = "Invalid security token. Please try again.";
+    } else {
+        $newTodoText = trim($_POST['new_todo'] ?? '');
+
+        if (!empty($newTodoText)) {
+            try {
+                // Read existing todos
+                try {
+                    $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+                    $existingTodos = $todoReader->parseTodos($rawContent);
+                } catch (\Exception $e) {
+                    $existingTodos = [];
+                }
+
+                // Check if the input has a link (wiki-style [[...]])
+                $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $newTodoText, $linkMatches);
+                $linkText = '';
+                $linkFile = '';
+
+                // Handle link first if present
+                $textWithPlaceholder = $newTodoText;
+                if ($hasLink) {
+                    $linkText = $linkMatches[1];
+                    $linkFile = $todoReader->linkTextToFileName($linkText);
+                    $textWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $newTodoText);
+                }
+
+                // Now check for date at the start
+                $datePattern = '^(\d{2}-[a-z]{3}-\d{4})\s+(.+)';
+
+                if (preg_match("/$datePattern/i", $textWithPlaceholder, $dateMatches)) {
+                    // Has a date at the start
+                    $createDate = $dateMatches[1];
+                    $description = trim($dateMatches[2]);
+                    // Replace placeholder with link text if it was there
+                    $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
+                } else {
+                    // Use today's date
+                    $createDate = date('d-M-Y');
+                    $description = $textWithPlaceholder;
+                    // Replace placeholder with link text if it was there
+                    $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
+                }
+
+                // Create new todo item
+                $newTodo = [
+                    'isComplete' => false,
+                    'createDate' => $createDate,
+                    'description' => $description,
+                    'completeDate' => null,
+                    'hasLink' => $hasLink,
+                    'linkText' => $linkText,
+                    'linkFile' => $linkFile,
+                ];
+
+                $existingTodos[] = $newTodo;
+
+                // Write back to file
+                $todoWriter->writeTodos($username, $currentYear, $project, $existingTodos);
+                $success_message = "Todo added successfully!";
+            } catch (\Exception $e) {
+                $error_message = "Error adding todo: " . $e->getMessage();
+            }
+        }
+    }
+}
+
 // Handle form submission to save todos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_POST['todo_data']) && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';

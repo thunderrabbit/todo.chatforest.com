@@ -185,3 +185,39 @@ body {
 .btn-primary:hover {
     background-color: #025082;
 }
+
+.btn-secondary {
+    background-color: #5c8aaf;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #4a7a9f;
+}
+
+.todo-new-form {
+    margin-bottom: 2em;
+    padding: 1em;
+    background-color: #f0f8ff;
+    border: 1px solid #cde5f6;
+    border-radius: 6px;
+}
+
+.todo-new-form h2 {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+}
+
+.form-group {
+    margin-bottom: 0.75em;
+}
+
+.todo-input {
+    padding: 0.5em;
+    border: 1px solid #cde5f6;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100%;
+    max-width: 500px;
+}

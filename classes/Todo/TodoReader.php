@@ -114,7 +114,7 @@ class TodoReader
         // Try to extract dates and content
         // Date format: DD-mon-YYYY (case insensitive for month abbreviation)
         $datePattern = '(\d{2}-[a-z]{3}-\d{4})';
-        
+
         // Check if it has a link (wiki-style [[...]])
         $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $remainder, $linkMatches);
 
@@ -182,7 +182,7 @@ class TodoReader
      * @param string $linkText The link text
      * @return string The filename (without .md extension)
      */
-    private function linkTextToFileName(string $linkText): string
+    public function linkTextToFileName(string $linkText): string
     {
         $filename = strtolower($linkText);
         $filename = str_replace(' ', '_', $filename);
