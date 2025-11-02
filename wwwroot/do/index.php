@@ -51,6 +51,25 @@ if (empty($pathParts)) {
     }
 }
 
+// Handle creating a new project file
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project' && $project !== null) {
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    if (!$csrfProtect->validateToken($csrf_token)) {
+        $error_message = "Invalid security token. Please try again.";
+    } else {
+        try {
+            // Create empty project file
+            $todoWriter->createEmptyFile($username, $currentYear, $project);
+            // Redirect to the newly created project
+            header("Location: /do/{$project}");
+            exit;
+        } catch (\Exception $e) {
+            $error_message = "Error creating project: " . $e->getMessage();
+        }
+    }
+}
+
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';
@@ -231,12 +250,15 @@ try {
 
 } catch (\Exception $e) {
     // File doesn't exist - show empty page or 404
+    $csrfToken = $csrfProtect->getToken("create_project_{$project}");
+
     $page = new \Template(config: $config);
     $page->setTemplate("todos/404.tpl.php");
     $page->set("username", $username);
     $page->set("project", $project);
     $page->set("year", $currentYear);
     $page->set("error", $e->getMessage());
+    $page->set("csrf_token", $csrfToken);
 
     $inner = $page->grabTheGoods();
 
