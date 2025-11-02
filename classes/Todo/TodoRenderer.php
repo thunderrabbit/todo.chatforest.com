@@ -311,6 +311,8 @@ class TodoRenderer
                                 formData.append("todo_completeDate", todoData.completeDate);
                                 formData.append("todo_isComplete", todoData.isComplete ? "1" : "0");
                                 formData.append("todo_hasLink", todoData.hasLink ? "1" : "0");
+                                formData.append("todo_linkText", todoData.linkText || "");
+                                formData.append("todo_linkFile", todoData.linkFile || "");
 
                                 fetch(todoForm.action, {
                                     method: "POST",

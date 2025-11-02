@@ -92,6 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $todoCompleteDate = $_POST['todo_completeDate'] ?? '';
                 $todoIsComplete = !empty($_POST['todo_isComplete']);
                 $todoHasLink = !empty($_POST['todo_hasLink']);
+                $todoLinkText = $_POST['todo_linkText'] ?? '';
+                $todoLinkFile = $_POST['todo_linkFile'] ?? '';
 
                 // First, remove from current list
                 $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
@@ -126,8 +128,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'description' => $todoDescription,
                     'completeDate' => $todoCompleteDate,
                     'hasLink' => $todoHasLink,
-                    'linkText' => '',
-                    'linkFile' => '',
+                    'linkText' => $todoLinkText,
+                    'linkFile' => $todoLinkFile,
                 ];
 
                 // Write target list
@@ -200,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     }
                     $description = trim($dateMatches[2]);
                     // Replace placeholder with link text if it was there
-                    $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
+                    $description = str_replace('LINK_PLACEHOLDER', '[[' . $linkText . ']]', $description);
                 } else {
                     // Use current client datetime
                     $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
@@ -216,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     }
                     $description = $textWithPlaceholder;
                     // Replace placeholder with link text if it was there
-                    $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
+                    $description = str_replace('LINK_PLACEHOLDER', '[[' . $linkText . ']]', $description);
                 }
 
                 // Create new todo item
