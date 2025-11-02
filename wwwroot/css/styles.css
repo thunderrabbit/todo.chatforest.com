@@ -116,6 +116,16 @@ body {
     margin: 0;
 }
 
+.todo-item.editing .todo-checkbox {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.todo-item.editing .drag-handle {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
 .todo-checkbox {
     margin-right: 0.75em;
     flex-shrink: 0;
@@ -135,6 +145,61 @@ body {
 
 .todo-link:hover {
     text-decoration: underline;
+}
+
+.todo-editable {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.todo-editing {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    width: 100%;
+}
+
+.todo-edit-field {
+    padding: 0.5em;
+    border: 1px solid #0366a8;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.todo-edit-field:focus {
+    outline: none;
+    border-color: #025082;
+    box-shadow: 0 0 0 2px rgba(3, 102, 168, 0.2);
+}
+
+.todo-edit-buttons {
+    display: flex;
+    gap: 0.5em;
+    margin-top: 0.25em;
+}
+
+.todo-edit-btn {
+    padding: 0.25em 0.75em;
+    border: 1px solid #0366a8;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    background-color: white;
+    color: #0366a8;
+}
+
+.todo-edit-btn:hover {
+    background-color: #f0f8ff;
+}
+
+.todo-edit-btn.save {
+    background-color: #0366a8;
+    color: white;
+}
+
+.todo-edit-btn.save:hover {
+    background-color: #025082;
 }
 
 .todo-dates {

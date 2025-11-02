@@ -76,6 +76,9 @@ class TodoRenderer
 
         $html .= '<label for="todo-' . $index . '">';
 
+        // Editable content wrapper with data attributes
+        $html .= '<span class="todo-editable" data-index="' . $index . '" data-createdate="' . htmlspecialchars($createDate ?? '') . '" data-description="' . htmlspecialchars($todo['description']) . '" data-completedate="' . htmlspecialchars($completeDate ?? '') . '">';
+
         // Description with optional link
         $html .= '<span class="todo-description">';
         if ($todo['hasLink']) {
@@ -99,7 +102,7 @@ class TodoRenderer
         }
         $html .= '</span>';
 
-        $html .= '</label>';
+        $html .= '</span></label>';
 
         // Hidden inputs to preserve todo data
         $html .= '<input type="hidden" name="todo_data[' . $index . '][description]" value="' . htmlspecialchars($todo['description']) . '">';
@@ -203,6 +206,171 @@ class TodoRenderer
 
                             // Auto-save after reordering
                             todoForm.submit();
+                        }
+                    });
+                }
+
+                // Long-press to edit functionality
+                var editableItems = todoForm.querySelectorAll(".todo-editable");
+                editableItems.forEach(function(item) {
+                    var longPressTimer = null;
+                    var originalContent = null;
+                    var todoItem = item.closest(".todo-item");
+                    var index = item.dataset.index;
+
+                    // Disable sortable while editing
+                    function isEditing() {
+                        return todoItem.classList.contains("editing");
+                    }
+
+                    // Start long press
+                    item.addEventListener("mousedown", function(e) {
+                        // Don\'t trigger on checkbox or drag handle
+                        if (e.target.closest(".todo-checkbox") || e.target.closest(".drag-handle")) {
+                            return;
+                        }
+
+                        longPressTimer = setTimeout(function() {
+                            startEdit(item, index, todoItem, originalContent);
+                        }, 500); // 500ms long press
+
+                        originalContent = item.innerHTML;
+                    });
+
+                    // Cancel long press on mouseup
+                    item.addEventListener("mouseup", function() {
+                        if (longPressTimer) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+                        }
+                    });
+
+                    // Touch support
+                    item.addEventListener("touchstart", function(e) {
+                        if (e.target.closest(".todo-checkbox") || e.target.closest(".drag-handle")) {
+                            return;
+                        }
+
+                        longPressTimer = setTimeout(function() {
+                            startEdit(item, index, todoItem, originalContent);
+                        }, 500);
+
+                        originalContent = item.innerHTML;
+                    });
+
+                    item.addEventListener("touchend", function() {
+                        if (longPressTimer) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+                        }
+                    });
+                });
+
+                function startEdit(item, index, todoItem, originalContent) {
+                    todoItem.classList.add("editing");
+
+                    var createDate = item.dataset.createdate || "";
+                    var description = item.dataset.description || "";
+                    var completeDate = item.dataset.completedate || "";
+
+                    var editHtml = \'<div class="todo-editing">\';
+                    editHtml += \'<input type="text" class="todo-edit-field" placeholder="Start Date (e.g., 14:30:17 02-nov-2025)" value="\' + createDate + \'" data-field="createDate">\';
+                    editHtml += \'<input type="text" class="todo-edit-field" placeholder="Description" value="\' + description + \'" data-field="description">\';
+                    editHtml += \'<input type="text" class="todo-edit-field" placeholder="End Date (e.g., 15:45:30 05-nov-2025)" value="\' + completeDate + \'" data-field="completeDate">\';
+                    editHtml += \'<div class="todo-edit-buttons">\';
+                    editHtml += \'<button type="button" class="todo-edit-btn save">Save</button>\';
+                    editHtml += \'<button type="button" class="todo-edit-btn cancel">Cancel</button>\';
+                    editHtml += \'</div></div>\';
+
+                    item.innerHTML = editHtml;
+
+                    // Focus first field
+                    var firstField = item.querySelector(".todo-edit-field");
+                    if (firstField) {
+                        firstField.focus();
+                    }
+
+                    // Save button
+                    var saveBtn = item.querySelector(".todo-edit-btn.save");
+                    saveBtn.addEventListener("click", function() {
+                        saveEdit(item, index, todoItem);
+                    });
+
+                    // Cancel button
+                    var cancelBtn = item.querySelector(".todo-edit-btn.cancel");
+                    cancelBtn.addEventListener("click", function() {
+                        cancelEdit(item, todoItem, originalContent);
+                    });
+
+                    // Enter key to save, Escape to cancel
+                    item.querySelectorAll(".todo-edit-field").forEach(function(field) {
+                        field.addEventListener("keydown", function(e) {
+                            if (e.key === "Enter" && e.ctrlKey) {
+                                saveEdit(item, index, todoItem);
+                            } else if (e.key === "Escape") {
+                                cancelEdit(item, todoItem, originalContent);
+                            }
+                        });
+                    });
+                }
+
+                function saveEdit(item, index, todoItem) {
+                    var fields = item.querySelectorAll(".todo-edit-field");
+                    var data = {};
+
+                    fields.forEach(function(field) {
+                        data[field.dataset.field] = field.value;
+                    });
+
+                    // Update hidden inputs
+                    var hiddenInputs = todoItem.querySelectorAll("input[type=hidden]");
+                    hiddenInputs.forEach(function(hidden) {
+                        var match = hidden.name.match(/todo_data\\[(\\d+)\\]\\[(\\w+)\\]/);
+                        if (match && match[1] === index && data[match[2]] !== undefined) {
+                            hidden.value = data[match[2]];
+                        }
+                    });
+
+                    // Update dataset for display
+                    item.dataset.createdate = data.createDate || "";
+                    item.dataset.description = data.description || "";
+                    item.dataset.completedate = data.completeDate || "";
+
+                    // Revert to display mode (will be rebuilt by server on reload)
+                    todoItem.classList.remove("editing");
+
+                    // Auto-save
+                    todoForm.submit();
+                }
+
+                function cancelEdit(item, todoItem, originalContent) {
+                    todoItem.classList.remove("editing");
+                    item.innerHTML = originalContent;
+
+                    // Re-attach long press listeners
+                    attachEditListeners(item);
+                }
+
+                function attachEditListeners(item) {
+                    var longPressTimer = null;
+                    var originalContent = null;
+                    var todoItem = item.closest(".todo-item");
+                    var index = item.dataset.index;
+
+                    item.addEventListener("mousedown", function(e) {
+                        if (e.target.closest(".todo-checkbox") || e.target.closest(".drag-handle")) {
+                            return;
+                        }
+                        longPressTimer = setTimeout(function() {
+                            startEdit(item, index, todoItem, originalContent);
+                        }, 500);
+                        originalContent = item.innerHTML;
+                    });
+
+                    item.addEventListener("mouseup", function() {
+                        if (longPressTimer) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
                         }
                     });
                 }
