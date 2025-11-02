@@ -138,30 +138,36 @@ class TodoRenderer
         $html .= '<button type="submit" class="btn btn-primary">Save Changes</button>';
         $html .= '</div>';
 
-        $html .= '<script>
+        $html .= '        <script>
+            // Helper function to set timezone/datetime before submitting
+            function setTimezoneAndDatetime(form) {
+                var timezoneInput = form.querySelector(".client_timezone");
+                var datetimeInput = form.querySelector(".client_datetime");
+                if (timezoneInput && datetimeInput) {
+                    timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, "0");
+                    const day = String(now.getDate()).padStart(2, "0");
+                    const hours = String(now.getHours()).padStart(2, "0");
+                    const minutes = String(now.getMinutes()).padStart(2, "0");
+                    const seconds = String(now.getSeconds()).padStart(2, "0");
+                    datetimeInput.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                }
+            }
+
             // Update timezone/datetime inputs when form is submitted
             var todoForm = document.querySelector(".todo-form");
             if (todoForm) {
                 todoForm.addEventListener("submit", function() {
-                    var timezoneInput = todoForm.querySelector(".client_timezone");
-                    var datetimeInput = todoForm.querySelector(".client_datetime");
-                    if (timezoneInput && datetimeInput) {
-                        timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                        const now = new Date();
-                        const year = now.getFullYear();
-                        const month = String(now.getMonth() + 1).padStart(2, "0");
-                        const day = String(now.getDate()).padStart(2, "0");
-                        const hours = String(now.getHours()).padStart(2, "0");
-                        const minutes = String(now.getMinutes()).padStart(2, "0");
-                        const seconds = String(now.getSeconds()).padStart(2, "0");
-                        datetimeInput.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                    }
+                    setTimezoneAndDatetime(todoForm);
                 });
 
                 // Auto-save when checkbox is clicked
                 var checkboxes = todoForm.querySelectorAll(".todo-checkbox");
                 checkboxes.forEach(function(checkbox) {
                     checkbox.addEventListener("change", function() {
+                        setTimezoneAndDatetime(todoForm);
                         todoForm.submit();
                     });
                 });
@@ -205,6 +211,7 @@ class TodoRenderer
                             });
 
                             // Auto-save after reordering
+                            setTimezoneAndDatetime(todoForm);
                             todoForm.submit();
                         }
                     });
@@ -340,6 +347,7 @@ class TodoRenderer
                     todoItem.classList.remove("editing");
 
                     // Auto-save
+                    setTimezoneAndDatetime(todoForm);
                     todoForm.submit();
                 }
 
