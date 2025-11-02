@@ -112,9 +112,9 @@ class TodoReader
         $remainder = trim($matches[2]);
 
         // Try to extract dates and content
-        // Date format: DD-mon-YYYY
+        // Date format: DD-mon-YYYY (case insensitive for month abbreviation)
         $datePattern = '(\d{2}-[a-z]{3}-\d{4})';
-
+        
         // Check if it has a link (wiki-style [[...]])
         $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $remainder, $linkMatches);
 
@@ -132,7 +132,7 @@ class TodoReader
             $remainderWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $remainder);
 
             // Extract dates
-            if (preg_match_all("/$datePattern/", $remainderWithPlaceholder, $dateMatches)) {
+            if (preg_match_all("/$datePattern/i", $remainderWithPlaceholder, $dateMatches)) {
                 $dates = $dateMatches[1];
                 $createDate = $dates[0];
                 if ($isComplete && isset($dates[1])) {
@@ -148,7 +148,7 @@ class TodoReader
             }
         } else {
             // No link, just dates and description
-            if (preg_match_all("/$datePattern/", $remainder, $dateMatches)) {
+            if (preg_match_all("/$datePattern/i", $remainder, $dateMatches)) {
                 $dates = $dateMatches[1];
                 $createDate = $dates[0];
                 if ($isComplete && isset($dates[1])) {
