@@ -1,5 +1,5 @@
 <div class="PagePanel">
-    <h1><?= htmlspecialchars($project) ?> - <?= htmlspecialchars($year) ?></h1>
+    <h1><a href="/do/" class="breadcrumb-link">..</a> / <?= htmlspecialchars($project) ?> - <?= htmlspecialchars($year) ?></h1>
 
     <?php if (!empty($error_message)): ?>
         <div class="alert alert-error">
