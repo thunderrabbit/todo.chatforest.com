@@ -252,9 +252,40 @@ class TodoRenderer
                                 newIndex++;
                             });
 
-                            // Auto-save after reordering
+                            // Auto-save after reordering via AJAX
                             setTimezoneAndDatetime(todoForm);
-                            todoForm.submit();
+
+                            // Build FormData for submission
+                            var formData = new FormData(todoForm);
+
+                            // Show saving state on the entire list
+                            todoList.classList.add("saving");
+
+                            // Send AJAX request
+                            fetch(todoForm.action, {
+                                method: "POST",
+                                headers: {
+                                    "X-Requested-With": "XMLHttpRequest"
+                                },
+                                body: formData
+                            })
+                            .then(function(response) {
+                                if (!response.ok) {
+                                    throw new Error("Save failed");
+                                }
+                                // Success - remove saving state
+                                todoList.classList.remove("saving");
+                                todoList.classList.remove("todo-error");
+                            })
+                            .catch(function(error) {
+                                // Failure - show error state
+                                todoList.classList.remove("saving");
+                                todoList.classList.add("todo-error");
+                                // Remove error state after animation
+                                setTimeout(function() {
+                                    todoList.classList.remove("todo-error");
+                                }, 2000);
+                            });
                         }
                     });
                 }

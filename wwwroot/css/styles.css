@@ -82,6 +82,18 @@ body {
     margin: 0;
 }
 
+.todo-list.saving {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.todo-list.todo-error {
+    background-color: #ffe6e6;
+    border-radius: 4px;
+    padding: 0.5em;
+    animation: todo-error-flash 0.5s;
+}
+
 .todo-item {
     padding: 0.75em;
     margin-bottom: 0.5em;
