@@ -81,10 +81,12 @@ class TodoRenderer
 
         // Description with optional link
         $descClass = 'todo-description';
+        $descData = '';
         if ($todo['hasLink']) {
             $descClass .= ' todo-dropzone';
+            $descData = ' data-link-file="' . htmlspecialchars($todo['linkFile']) . '"';
         }
-        $html .= '<span class="' . $descClass . '">';
+        $html .= '<span class="' . $descClass . '"' . $descData . '>';
         if ($todo['hasLink']) {
             $linkText = htmlspecialchars($todo['linkText']);
             $linkUrl = "/do/{$todo['linkFile']}";
@@ -232,6 +234,7 @@ class TodoRenderer
                 // Initialize sortable drag and drop
                 var todoList = todoForm.querySelector(".todo-list");
                 if (todoList && typeof Sortable !== "undefined") {
+                    var targetDropzone = null; // Track which dropzone we\'re over
                     var sortable = new Sortable(todoList, {
                         handle: ".drag-handle",
                         animation: 150,
@@ -241,6 +244,7 @@ class TodoRenderer
                             dropzones.forEach(function(dropzone) {
                                 dropzone.classList.remove("sortable-drag-over");
                             });
+                            targetDropzone = null;
                         },
                         onMove: function(e) {
                             // Highlight the dropzone if dragging over it
@@ -253,6 +257,9 @@ class TodoRenderer
                             if (e.related && e.related.querySelector(".todo-dropzone")) {
                                 var dropzone = e.related.querySelector(".todo-dropzone");
                                 dropzone.classList.add("sortable-drag-over");
+                                targetDropzone = dropzone;
+                            } else {
+                                targetDropzone = null;
                             }
                         },
                         onUnchoose: function(e) {
@@ -261,8 +268,86 @@ class TodoRenderer
                             dropzones.forEach(function(dropzone) {
                                 dropzone.classList.remove("sortable-drag-over");
                             });
+                            // Don\'t clear targetDropzone here - let onEnd handle it
                         },
-                        onEnd: function() {
+                        onEnd: function(e) {
+                            // Check if this was a drop onto a dropzone
+                            if (targetDropzone !== null) {
+                                // This is a move to another list - handle it specially
+                                var targetFile = targetDropzone.dataset.linkFile;
+
+                                // Get the data from the dragged item
+                                var draggedItem = e.item;
+                                var draggedIndex = draggedItem.querySelector(".todo-checkbox").name.match(/\[(\d+)\]/)[1];
+                                var todoData = {};
+
+                                // Get all hidden inputs for this item
+                                var hiddenInputs = draggedItem.querySelectorAll("input[type=hidden]");
+                                hiddenInputs.forEach(function(hidden) {
+                                    var match = hidden.name.match(/todo_data\\[(\\d+)\\]\\[(\\w+)\\]/);
+                                    if (match && match[1] === draggedIndex) {
+                                        todoData[match[2]] = hidden.value;
+                                    }
+                                });
+                                todoData.isComplete = draggedItem.querySelector(".todo-checkbox").checked;
+
+                                // Convert hasLink from "1"/"0" to boolean if needed
+                                if (todoData.hasLink !== undefined) {
+                                    todoData.hasLink = todoData.hasLink === "1";
+                                } else {
+                                    todoData.hasLink = false;
+                                }
+
+                                // Remove the item from current list (optimistic update)
+                                draggedItem.remove();
+
+                                // Send AJAX request to move the item
+                                setTimezoneAndDatetime(todoForm);
+                                var formData = new FormData(todoForm);
+                                formData.append("action", "move_todo");
+                                formData.append("target_file", targetFile);
+                                formData.append("todo_description", todoData.description);
+                                formData.append("todo_createDate", todoData.createDate);
+                                formData.append("todo_completeDate", todoData.completeDate);
+                                formData.append("todo_isComplete", todoData.isComplete ? "1" : "0");
+                                formData.append("todo_hasLink", todoData.hasLink ? "1" : "0");
+
+                                fetch(todoForm.action, {
+                                    method: "POST",
+                                    headers: {
+                                        "X-Requested-With": "XMLHttpRequest"
+                                    },
+                                    body: formData
+                                })
+                                .then(function(response) {
+                                    if (!response.ok) {
+                                        throw new Error("Move failed");
+                                    }
+                                    return response.json();
+                                })
+                                .then(function(data) {
+                                    // Update CSRF token if provided
+                                    if (data.csrf_token) {
+                                        var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
+                                        allCsrfInputs.forEach(function(csrfInput) {
+                                            csrfInput.value = data.csrf_token;
+                                        });
+                                    }
+                                })
+                                .catch(function(error) {
+                                    // Restore the item on error
+                                    todoList.appendChild(draggedItem);
+                                    draggedItem.classList.add("todo-error");
+                                    setTimeout(function() {
+                                        draggedItem.classList.remove("todo-error");
+                                    }, 2000);
+                                });
+
+                                targetDropzone = null;
+                                return;
+                            }
+
+                            // Regular reordering within the same list
                             // Reorder form inputs to match new DOM order
                             var todoItems = todoList.querySelectorAll(".todo-item");
                             var newIndex = 0;

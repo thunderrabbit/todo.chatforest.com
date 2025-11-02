@@ -70,6 +70,91 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// Handle moving todo to another list
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'move_todo' && $project !== null) {
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    // Check if this is an AJAX request
+    $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
+    if (!$csrfProtect->validateToken($csrf_token)) {
+        $error_message = "Invalid security token. Please try again.";
+    } else {
+        $targetFile = $_POST['target_file'] ?? '';
+
+        if (empty($targetFile)) {
+            $error_message = "Target file not specified.";
+        } else {
+            try {
+                // Get the todo data from POST
+                $todoDescription = $_POST['todo_description'] ?? '';
+                $todoCreateDate = $_POST['todo_createDate'] ?? '';
+                $todoCompleteDate = $_POST['todo_completeDate'] ?? '';
+                $todoIsComplete = !empty($_POST['todo_isComplete']);
+                $todoHasLink = !empty($_POST['todo_hasLink']);
+
+                // First, remove from current list
+                $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+                $currentTodos = $todoReader->parseTodos($rawContent);
+
+                // Find and remove the item (match by description and createDate)
+                $updatedTodos = [];
+                foreach ($currentTodos as $todo) {
+                    if ($todo['description'] === $todoDescription && $todo['createDate'] === $todoCreateDate) {
+                        // Skip this one - it\'s being moved
+                        continue;
+                    }
+                    $updatedTodos[] = $todo;
+                }
+
+                // Write updated current list
+                $todoWriter->writeTodos($username, $currentYear, $project, $updatedTodos);
+
+                // Now add to target list
+                try {
+                    $targetContent = $todoReader->readRawContent($username, $currentYear, $targetFile);
+                    $targetTodos = $todoReader->parseTodos($targetContent);
+                } catch (\Exception $e) {
+                    // Target file doesn\'t exist - create it
+                    $targetTodos = [];
+                }
+
+                // Add the moved item to target list
+                $targetTodos[] = [
+                    'isComplete' => $todoIsComplete,
+                    'createDate' => $todoCreateDate,
+                    'description' => $todoDescription,
+                    'completeDate' => $todoCompleteDate,
+                    'hasLink' => $todoHasLink,
+                    'linkText' => '',
+                    'linkFile' => '',
+                ];
+
+                // Write target list
+                $todoWriter->writeTodos($username, $currentYear, $targetFile, $targetTodos);
+
+                $success_message = "Todo moved successfully!";
+            } catch (\Exception $e) {
+                $error_message = "Error moving todo: " . $e->getMessage();
+            }
+        }
+    }
+
+    // If AJAX request, return JSON and exit
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        if (!empty($error_message)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $error_message]);
+        } else {
+            // Generate new CSRF token for next request
+            $newToken = $csrfProtect->getToken("todo_form_{$project}");
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Moved', 'csrf_token' => $newToken]);
+        }
+        exit;
+    }
+}
+
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';
