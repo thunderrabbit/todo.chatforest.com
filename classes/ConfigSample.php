@@ -6,6 +6,7 @@ class Config {
     public $cookie_name = 'mt3login'; // used for cookies
     public $cookie_lifetime = 60 * 60 * 24 * 30; // 30 days
     public $app_path = '/home/barefoot_rob/db.marbletrack3.com';
+    public $todos_path = '/home/barefoot_rob/db.marbletrack3.com/todos'; // where todo markdown files are stored
 
     public $dbHost = "localhost";
     public $dbUser = "";

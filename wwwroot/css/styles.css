@@ -46,3 +46,142 @@ body {
     text-align: right;
     color: #555;
 }
+
+.alert {
+    padding: 0.75em 1em;
+    border-radius: 4px;
+    margin-bottom: 1em;
+}
+
+.alert-error {
+    background-color: #ffe6e6;
+    border: 1px solid #ff9999;
+    color: #cc0000;
+}
+
+.alert-success {
+    background-color: #e6ffe6;
+    border: 1px solid #99ff99;
+    color: #006600;
+}
+
+/* Todo List Styles */
+.todo-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.todo-item {
+    padding: 0.75em;
+    margin-bottom: 0.5em;
+    background-color: #ffffff;
+    border: 1px solid #cde5f6;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.todo-item.todo-complete {
+    opacity: 0.7;
+    background-color: #f8f8f8;
+}
+
+.todo-item label {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+.todo-checkbox {
+    margin-right: 0.75em;
+    flex-shrink: 0;
+}
+
+.todo-description {
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+.todo-link {
+    color: #0366a8;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.todo-link:hover {
+    text-decoration: underline;
+}
+
+.todo-dates {
+    margin-left: 1em;
+    font-size: 0.85em;
+    color: #666;
+    display: flex;
+    gap: 0.5em;
+}
+
+.todo-date-complete {
+    color: #006600;
+    font-weight: bold;
+}
+
+.no-todos,
+.no-projects {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 2em;
+}
+
+.project-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.project-list li {
+    padding: 0.75em;
+    margin-bottom: 0.5em;
+    background-color: #ffffff;
+    border: 1px solid #cde5f6;
+    border-radius: 4px;
+}
+
+.project-list a {
+    color: #0366a8;
+    text-decoration: none;
+    display: block;
+}
+
+.project-list a:hover {
+    text-decoration: underline;
+}
+
+.todo-actions {
+    margin-top: 1.5em;
+    padding-top: 1em;
+    border-top: 1px solid #cde5f6;
+}
+
+.btn {
+    padding: 0.5em 1.5em;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background-color: #0366a8;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #025082;
+}

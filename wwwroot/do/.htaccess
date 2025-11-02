@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /do/
+
+# If request is not for a file or directory that exists
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route everything to index.php
+RewriteRule ^(.*)$ index.php [QSA,L]
+
