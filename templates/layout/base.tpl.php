@@ -22,16 +22,7 @@
     <div class="PageWrapper">
         <?= $page_content ?>
     </div>
-    <script>
-        // Display timezone at the top right
-        document.addEventListener('DOMContentLoaded', function() {
-            var timezoneDisplay = document.querySelector('.timezone-display');
-            if (timezoneDisplay) {
-                var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                timezoneDisplay.textContent = timezone;
-            }
-        });
-    </script>
+    <script src="/js/timezone.js"></script>
 </body>
 </html>
 
