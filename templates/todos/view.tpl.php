@@ -26,6 +26,11 @@
             <button type="submit" class="btn btn-secondary">Add Todo</button>
         </form>
         <script>
+            // Focus the input field when page loads
+            window.addEventListener('DOMContentLoaded', function() {
+                document.querySelector('.todo-input').focus();
+            });
+
             // Update timezone and datetime on form submit
             document.querySelector('.todo-new-item').addEventListener('submit', function() {
                 document.getElementById('client_timezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone;
