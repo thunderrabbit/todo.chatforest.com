@@ -1,66 +1,70 @@
-# DreamHost Site Template (MVP Framework)
+# Todo.chatforest.com
 
-This is a minimalist PHP template framework developed originally for
-db.**MarbleTrack3** and now used as a starter for DreamHost-based sites.
-It includes a simple admin dashboard, a lightweight templating engine,
-and a clean layout system with optional authentication hooks.
+A personal todo list management website built on a minimalist PHP framework. Manage your todos in simple Markdown files with a responsive web interface.
 
 ---
 
-## 📂 Structure
+## 📋 Overview
 
-- `classes/Template.php`: Core rendering engine with support for string-capture (`grabTheGoods()`) and layout nesting.
-- `wwwroot/`: Public-facing files. Place your admin pages here (`/admin/index.php`, etc).
-- `templates/`: Your site’s UI. Includes layout wrappers and specific content templates.
-- `css/styles.css`: Soft blue aesthetic with clean panels and nav bar.
+This is a lightweight todo list system designed for personal use. Each user gets their own todo projects, stored as Markdown files in a protected directory that's not web-accessible. The interface is clean, simple, and only visible to logged-in users.
+
+## 📂 File Structure
+
+Todo files are stored in `todos/(username)/` adjacent to `wwwroot`, ensuring they remain private and not accessible via web browsers.
+
+Each project gets its own Markdown file. For example:
+- `todos/rob/create_todo_website.md`
+- `todos/rob/book_travel.md`
+- `todos/rob/learn_piano.md`
+
+## ✨ Todo Format
+
+Each todo follows this simple format:
+
+**Unfinished todo:**
+```markdown
+- [ ] 02-nov-2025 Create TODO website
+```
+
+**Finished todo:**
+```markdown
+- [x] 02-nov-2025 Create TODO website 05-nov-2025
+```
+
+- **Date at the start**: When the todo was created
+- **Checkbox**: `[ ]` for unfinished, `[x]` for finished
+- **Todo text**: Description of the task
+- **Date at the end**: When the todo was completed (only appears for finished todos)
+
+## 🎯 Features
+
+- **User Authentication**: Login required to access your todos
+- **Markdown-Based**: Simple, readable file format
+- **Private Storage**: Todos stored outside web-accessible directories
+- **Responsive Web Interface**: Edit todos via browser on any device
+- **Manual Editing**: Files can also be edited directly with any text editor
+- **Per-User Projects**: Each user has their own todo directory
+- **Project Organization**: Separate files for different projects/categories
+
+## 🔧 Technology Stack
+
+Built on a minimalist PHP framework:
+- Lightweight custom templating system (no Twig, Blade, or Smarty)
+- Session-based authentication with database-backed cookies
+- Simple, clean UI with light blue aesthetic
+- Easy deployment to DreamHost or similar hosting
+
+## 🚀 Getting Started
+
+1. Visit the site and log in with your credentials
+2. Access your personal todo dashboard
+3. Create new project files or open existing ones
+4. Add todos with dates, mark them complete when done
+
+The system automatically tracks when todos are created and finished, making it easy to see your productivity over time.
 
 ---
 
-## 🚀 Features
-
-- Lightweight custom templating (no Twig, Blade, or Smarty)
-- Admin dashboard scaffold
-- Built-in layout nesting (`grabTheGoods()`)
-- Styled with light blues and page panels
-- Easily set up first (admin) user
-- Uses cookies in DB for logins
-
----
-
-## 🔧 Setup (with DreamHost Deployment)
-
-1. **Set up a DreamHost new user account:**
-   - Clone [thunderrabbit/new-DH-user-account](https://github.com/thunderrabbit/new-DH-user-account)
-
-2. **Set your domain's Web Directory in DreamHost panel:**
-   - e.g. `/home/dh_user/example.com/wwwroot`
-
-3. **Clone this repo locally** into a working directory.
-
-4. **Configure your deploy script:**
-   - Edit `scp_files_to_dh.sh` to point to your DH username and target path.
-
-5. **Clone this repo server-side** (optional but useful):
-   - Clone to `/home/dh_user/example.com`
-   - ⚠️ Be aware of DreamHost system links like `.dh-diag → /dh/web/diag` — **The symlink is owned by `root`**.
-
-6. **Deploy with `scp_files_to_dh.sh`** or manually sync files.
-
-7. Customize the templates:
-   - `/templates/layout/admin_base.tpl.php`: Main layout
-   - `/templates/admin/index.tpl.php`: Admin dashboard
-   - `/templates/admin/workers/index.tpl.php`: Example content page
-
-8. Visit `/` to automagically create admin user in the freshly set up TABLEs `users` and `cookies`
-
----
-
-## 📝 License
-
-No license yet. Use it privately, tweak as needed. Attribution appreciated if it grows into something shared.
-
----
-
-## ✨ Origin
+## 💡 Based on
 
 Originally created during work on the **MarbleTrack3** stop-motion animation archive (June 2025). Designed for fun and minimal overhead.
