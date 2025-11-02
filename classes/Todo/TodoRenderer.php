@@ -121,12 +121,36 @@ class TodoRenderer
     {
         $html = '<form method="POST" action="' . htmlspecialchars($actionUrl) . '" class="todo-form">';
         $html .= '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrfToken) . '">';
+        $html .= '<input type="hidden" name="client_timezone" class="client_timezone" value="">';
+        $html .= '<input type="hidden" name="client_datetime" class="client_datetime" value="">';
 
         $html .= $this->renderTodos($todos, $username, $year);
 
         $html .= '<div class="todo-actions">';
         $html .= '<button type="submit" class="btn btn-primary">Save Changes</button>';
         $html .= '</div>';
+
+        $html .= '<script>
+            // Update timezone/datetime inputs when form is submitted
+            var todoForm = document.querySelector(".todo-form");
+            if (todoForm) {
+                todoForm.addEventListener("submit", function() {
+                    var timezoneInput = todoForm.querySelector(".client_timezone");
+                    var datetimeInput = todoForm.querySelector(".client_datetime");
+                    if (timezoneInput && datetimeInput) {
+                        timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, "0");
+                        const day = String(now.getDate()).padStart(2, "0");
+                        const hours = String(now.getHours()).padStart(2, "0");
+                        const minutes = String(now.getMinutes()).padStart(2, "0");
+                        const seconds = String(now.getSeconds()).padStart(2, "0");
+                        datetimeInput.value = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                    }
+                });
+            }
+        </script>';
 
         $html .= '</form>';
 

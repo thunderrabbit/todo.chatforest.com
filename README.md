@@ -25,14 +25,17 @@ Each todo follows this simple format:
 **Unfinished todo:**
 ```markdown
 - [ ] 02-nov-2025 Create TODO website
+- [ ] 14:30:17 02-nov-2025 Create TODO website
 ```
 
 **Finished todo:**
 ```markdown
 - [x] 02-nov-2025 Create TODO website 05-nov-2025
+- [x] 14:30:17 02-nov-2025 Create TODO website 15:45:30 05-nov-2025
 ```
 
 - **Date at the start**: When the todo was created
+- **Optional timestamp**: HH:MM:SS format before date (12:00:00 used if omitted)
 - **Checkbox**: `[ ]` for unfinished, `[x]` for finished
 - **Todo text**: Description of the task
 - **Date at the end**: When the todo was completed (only appears for finished todos)

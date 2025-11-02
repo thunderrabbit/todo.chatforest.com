@@ -112,8 +112,8 @@ class TodoReader
         $remainder = trim($matches[2]);
 
         // Try to extract dates and content
-        // Date format: DD-mon-YYYY (case insensitive for month abbreviation)
-        $datePattern = '(\d{2}-[a-z]{3}-\d{4})';
+        // Date format: [HH:MM:SS ]DD-mon-YYYY (case insensitive for month abbreviation)
+        $datePattern = '((?:\d{2}:\d{2}:\d{2}\s+)?\d{2}-[a-z]{3}-\d{4})';
 
         // Check if it has a link (wiki-style [[...]])
         $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $remainder, $linkMatches);

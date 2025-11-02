@@ -103,17 +103,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
 
                 // Now check for date at the start
-                $datePattern = '^(\d{2}-[a-z]{3}-\d{4})\s+(.+)';
+                // Pattern matches: [HH:MM:SS ]DD-mon-YYYY description
+                $datePattern = '^((?:\d{2}:\d{2}:\d{2}\s+)?\d{2}-[a-z]{3}-\d{4})\s+(.+)';
 
                 if (preg_match("/$datePattern/i", $textWithPlaceholder, $dateMatches)) {
                     // Has a date at the start
                     $createDate = $dateMatches[1];
+                    // If no time specified, add default 12:00:00 before the date
+                    if (!preg_match('/\d{2}:\d{2}:\d{2}/', $createDate)) {
+                        $createDate = '12:00:00 ' . $createDate;
+                    }
                     $description = trim($dateMatches[2]);
                     // Replace placeholder with link text if it was there
                     $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
                 } else {
-                    // Use today's date
-                    $createDate = date('d-M-Y');
+                    // Use current client datetime
+                    $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+
+                    // Convert client datetime to our format: HH:MM:SS DD-Mon-YYYY
+                    try {
+                        $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
+                        $createDate = $dt->format('H:i:s d-M-Y');
+                    } catch (\Exception $e) {
+                        // Fallback to server time
+                        $createDate = date('H:i:s d-M-Y');
+                    }
                     $description = $textWithPlaceholder;
                     // Replace placeholder with link text if it was there
                     $description = str_replace('LINK_PLACEHOLDER', $linkText, $description);
@@ -169,7 +184,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
 
                 // Update completion date if just completed
                 if ($todo['isComplete'] && empty($existingTodos[$index]['isComplete'])) {
-                    $todo['completeDate'] = date('d-M-Y');
+                    // Use current timestamp for completion
+                    $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+
+                    try {
+                        $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
+                        $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
+                    } catch (\Exception $e) {
+                        $todo['completeDate'] = date('H:i:s d-M-Y');
+                    }
                 } elseif (!$todo['isComplete']) {
                     $todo['completeDate'] = null;
                 }
