@@ -144,6 +144,20 @@ body {
     color: #aaa;
 }
 
+.todo-item.todo-future {
+    opacity: 0.5;
+    background-color: #fafafa;
+}
+
+.todo-item.todo-future .todo-description {
+    color: #888;
+    font-style: italic;
+}
+
+.todo-item.todo-future .todo-date-create {
+    color: #aaa;
+}
+
 .todo-item.todo-error {
     background-color: #ffe6e6;
     border-color: #ff9999;

@@ -64,12 +64,18 @@ class TodoRenderer
         // Check if item should be styled as old (started over 1 week ago, has time component, not a link)
         $isOld = $this->isItemOld($todo, $clientTimezone);
 
+        // Check if item is in the future (for dimming)
+        $isFuture = $this->isItemFuture($todo, $clientTimezone);
+
         $html = '<li class="todo-item';
         if ($isComplete) {
             $html .= ' todo-complete';
         }
         if ($isOld) {
             $html .= ' todo-old';
+        }
+        if ($isFuture) {
+            $html .= ' todo-future';
         }
         $html .= '">';
 
@@ -128,6 +134,7 @@ class TodoRenderer
         $html .= '<input type="hidden" name="todo_data[' . $index . '][hasLink]" value="' . ($todo['hasLink'] ? '1' : '0') . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][linkText]" value="' . htmlspecialchars($todo['linkText']) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][linkFile]" value="' . htmlspecialchars($todo['linkFile']) . '">';
+        $html .= '<input type="hidden" name="todo_data[' . $index . '][recurringMarker]" value="' . htmlspecialchars($todo['recurringMarker'] ?? '') . '">';
 
         $html .= '</li>';
 
@@ -676,7 +683,7 @@ class TodoRenderer
     }
 
     /**
-     * Filter todos based on age rules
+     * Filter todos based on age rules and future time rules
      *
      * @param array $todos Array of todo items
      * @param string $clientTimezone Client timezone
@@ -688,39 +695,85 @@ class TodoRenderer
         $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
 
         foreach ($todos as $todo) {
-            // Incomplete items with links are never hidden
-            if (!$todo['isComplete'] && $todo['hasLink']) {
+            // Skip completed todos (they'll be handled separately)
+            if ($todo['isComplete']) {
+                // Hide completed items if completeDate exists, has time, and is > 1 hour old
+                if (!empty($todo['completeDate'])) {
+                    $completeDateTime = $this->parseDate($todo['completeDate'], $clientTimezone);
+                    if ($completeDateTime !== null && $this->hasTimeComponent($todo['completeDate'])) {
+                        $age = $now->getTimestamp() - $completeDateTime->getTimestamp();
+                        if ($age > 3600) { // More than 1 hour
+                            continue; // Skip this item
+                        }
+                    }
+                }
                 $filtered[] = $todo;
                 continue;
             }
 
-            // Hide completed items if completeDate exists, has time, and is > 1 hour old
-            if ($todo['isComplete'] && !empty($todo['completeDate'])) {
-                $completeDateTime = $this->parseDate($todo['completeDate'], $clientTimezone);
-                if ($completeDateTime !== null && $this->hasTimeComponent($todo['completeDate'])) {
-                    $age = $now->getTimestamp() - $completeDateTime->getTimestamp();
-                    if ($age > 3600) { // More than 1 hour
+            // For incomplete todos, check future time rules
+            if (!empty($todo['createDate']) && $this->hasTimeComponent($todo['createDate'])) {
+                $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
+                if ($createDateTime !== null) {
+                    // Hide items more than 12 hours in the future
+                    $secondsUntil = $createDateTime->getTimestamp() - $now->getTimestamp();
+                    if ($secondsUntil > 12 * 3600) { // More than 12 hours
+                        continue; // Skip this item
+                    }
+
+                    // Also hide items started > 2 weeks ago (old past items)
+                    if ($secondsUntil < 0 && abs($secondsUntil) > 14 * 24 * 3600) {
                         continue; // Skip this item
                     }
                 }
             }
 
-            // Hide items started > 2 weeks ago if createDate exists, has time
-            // (but not incomplete items with links - already handled above)
-            if (!empty($todo['createDate']) && $this->hasTimeComponent($todo['createDate'])) {
-                $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
-                if ($createDateTime !== null) {
-                    $age = $now->getTimestamp() - $createDateTime->getTimestamp();
-                    if ($age > 14 * 24 * 3600) { // More than 2 weeks (14 days)
-                        continue; // Skip this item
-                    }
-                }
+            // Incomplete items with links are never hidden (except by future time rules above)
+            if ($todo['hasLink']) {
+                $filtered[] = $todo;
+                continue;
             }
 
             $filtered[] = $todo;
         }
 
         return $filtered;
+    }
+
+    /**
+     * Check if item is in the future (>4 hours) and should be dimmed
+     *
+     * @param array $todo The todo item
+     * @param string $clientTimezone Client timezone
+     * @return bool True if item should be dimmed
+     */
+    private function isItemFuture(array $todo, string $clientTimezone): bool
+    {
+        // Only check incomplete todos
+        if ($todo['isComplete']) {
+            return false;
+        }
+
+        // Items without createDate are not future
+        if (empty($todo['createDate'])) {
+            return false;
+        }
+
+        // Items without time component are not future
+        if (!$this->hasTimeComponent($todo['createDate'])) {
+            return false;
+        }
+
+        $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
+        if ($createDateTime === null) {
+            return false;
+        }
+
+        $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
+        $secondsUntil = $createDateTime->getTimestamp() - $now->getTimestamp();
+
+        // More than 4 hours in the future
+        return $secondsUntil > 4 * 3600;
     }
 
     /**

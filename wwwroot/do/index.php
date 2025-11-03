@@ -24,6 +24,7 @@ $success_message = '';
 $todoReader = new \Todo\TodoReader($config);
 $todoWriter = new \Todo\TodoWriter($config);
 $todoRenderer = new \Todo\TodoRenderer($config);
+$recurringCalculator = new \Todo\RecurringCalculator();
 
 // Parse URL first to get project info
 // URL format: /do/project or /do/username/year/project
@@ -257,6 +258,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
         // Update todo completion status based on form submission
         $todos = [];
         $checked = $_POST['todo'] ?? [];
+        $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+
+        // Track which todos were just completed (for recurring logic)
+        $newlyCompletedTodos = [];
 
         foreach ($_POST['todo_data'] as $index => $todoData) {
             // Build todo from form data
@@ -267,6 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
                 'hasLink' => !empty($todoData['hasLink']),
                 'linkText' => $todoData['linkText'] ?? '',
                 'linkFile' => $todoData['linkFile'] ?? '',
+                'recurringMarker' => $todoData['recurringMarker'] ?? '',
             ];
 
             // Update completion status
@@ -275,20 +281,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
             // Update completion date if just completed
             if ($todo['isComplete'] && empty($todoData['completeDate'])) {
                 // Use current timestamp for completion
-                $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
                 $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
 
                 try {
                     $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                     $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
+
+                    // Track this as newly completed for recurring logic
+                    if (!empty($todo['recurringMarker'])) {
+                        $newlyCompletedTodos[] = $todo;
+                    }
                 } catch (\Exception $e) {
                     $todo['completeDate'] = date('H:i:s d-M-Y');
+                    if (!empty($todo['recurringMarker'])) {
+                        $newlyCompletedTodos[] = $todo;
+                    }
                 }
             } elseif (!$todo['isComplete']) {
                 $todo['completeDate'] = '';
             }
 
             $todos[] = $todo;
+        }
+
+        // Create next occurrences for newly completed recurring todos
+        foreach ($newlyCompletedTodos as $completedTodo) {
+            try {
+                $nextOccurrence = $recurringCalculator->calculateNextOccurrence(
+                    $completedTodo['recurringMarker'],
+                    $completedTodo['completeDate'],
+                    $completedTodo['createDate'],
+                    $clientTimezone
+                );
+
+                // Create new todo for next occurrence
+                $nextTodo = [
+                    'isComplete' => false,
+                    'createDate' => $nextOccurrence,
+                    'description' => $completedTodo['description'],
+                    'completeDate' => null,
+                    'hasLink' => $completedTodo['hasLink'],
+                    'linkText' => $completedTodo['linkText'],
+                    'linkFile' => $completedTodo['linkFile'],
+                    'recurringMarker' => $completedTodo['recurringMarker'],
+                ];
+
+                // Add the new todo to the list (after the completed one)
+                $todos[] = $nextTodo;
+            } catch (\Exception $e) {
+                // If calculation fails, log error but don't break the save
+                error_log("Error calculating next occurrence: " . $e->getMessage());
+            }
         }
 
         // Write back to file

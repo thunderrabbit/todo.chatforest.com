@@ -164,6 +164,9 @@ class TodoReader
             }
         }
 
+        // Extract recurring marker if present
+        $recurringMarker = $this->extractRecurringMarker($description);
+
         return [
             'isComplete' => $isComplete,
             'createDate' => $createDate,
@@ -172,7 +175,36 @@ class TodoReader
             'hasLink' => $hasLink,
             'linkText' => $linkText,
             'linkFile' => $linkFile,
+            'recurringMarker' => $recurringMarker,
         ];
+    }
+
+    /**
+     * Extract recurring marker from description
+     *
+     * Returns: null, '#d', '#w:mon,tue,fri', or '#m:1,11,21'
+     *
+     * @param string $description The todo description
+     * @return string|null The recurring marker or null
+     */
+    private function extractRecurringMarker(string $description): ?string
+    {
+        // Match #d for daily
+        if (preg_match('/#d\b/', $description)) {
+            return '#d';
+        }
+
+        // Match #w:mon:tue:fri for weekly (3-letter day codes, colon-separated)
+        if (preg_match('/#w:([a-z]{3}(?::[a-z]{3})*)/i', $description, $matches)) {
+            return '#w:' . strtolower($matches[1]);
+        }
+
+        // Match #m:1,11,21 for monthly (comma-separated day numbers)
+        if (preg_match('/#m:(\d+(?:,\d+)*)/', $description, $matches)) {
+            return '#m:' . $matches[1];
+        }
+
+        return null;
     }
 
     /**
