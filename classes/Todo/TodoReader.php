@@ -75,17 +75,20 @@ class TodoReader
      * Parse markdown content into structured todo items
      *
      * @param string $markdown The raw markdown content
-     * @return array Array of todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile
+     * @return array Array of todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile, originalIndex
      */
     public function parseTodos(string $markdown): array
     {
         $lines = explode("\n", $markdown);
         $todos = [];
+        $originalIndex = 0;
 
         foreach ($lines as $line) {
             $todo = $this->parseTodoLine(trim($line));
             if ($todo !== null) {
+                $todo['originalIndex'] = $originalIndex;
                 $todos[] = $todo;
+                $originalIndex++;
             }
         }
 

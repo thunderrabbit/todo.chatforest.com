@@ -336,33 +336,137 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
 
         // Write back to file
         try {
-            // Read the full file content first (including hidden items)
+            // Read the full file content first (including hidden items) with original positions
             $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
             $fullTodos = $todoReader->parseTodos($rawContent);
 
-            // Create a set of visible todos for quick lookup
-            $visibleTodosSet = [];
-            foreach ($todos as $visibleTodo) {
-                $key = ($visibleTodo['createDate'] ?? '') . '|' . ($visibleTodo['description'] ?? '');
-                $visibleTodosSet[$key] = true;
+            // Create a map of form todos by unique key (createDate + description)
+            // This allows us to match form items to their original items
+            $formTodosMap = [];
+            foreach ($todos as $formTodo) {
+                $key = ($formTodo['createDate'] ?? '') . '|' . ($formTodo['description'] ?? '');
+                $formTodosMap[$key] = $formTodo;
             }
 
-            // Build the merged list: visible items in their new order, then hidden items
-            $mergedTodos = [];
-            // First, add all visible items in the order they appear in the form
-            foreach ($todos as $visibleTodo) {
-                $mergedTodos[] = $visibleTodo;
+            // Track which original todos were matched to form todos
+            $matchedOriginalKeys = [];
+
+            // Build a map of original todos by key for quick lookup
+            $originalTodosMap = [];
+            foreach ($fullTodos as $originalTodo) {
+                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                $originalTodosMap[$key] = $originalTodo;
             }
-            // Then, append hidden items at the end
-            foreach ($fullTodos as $fullTodo) {
-                $key = ($fullTodo['createDate'] ?? '') . '|' . ($fullTodo['description'] ?? '');
-                if (!isset($visibleTodosSet[$key])) {
-                    // This item is hidden - add it at the end
-                    $mergedTodos[] = $fullTodo;
+
+            // Check if form order differs from original order for visible items
+            // This indicates drag-and-drop occurred
+            $formOrder = [];
+            $originalOrder = [];
+            foreach ($todos as $formTodo) {
+                $key = ($formTodo['createDate'] ?? '') . '|' . ($formTodo['description'] ?? '');
+                if (isset($originalTodosMap[$key])) {
+                    $formOrder[] = $key;
+                    $originalOrder[] = $key;
+                }
+            }
+            // Sort originalOrder by originalIndex to get true original order
+            usort($originalOrder, function($keyA, $keyB) use ($originalTodosMap) {
+                $indexA = $originalTodosMap[$keyA]['originalIndex'] ?? 999999;
+                $indexB = $originalTodosMap[$keyB]['originalIndex'] ?? 999999;
+                return $indexA <=> $indexB;
+            });
+            $wasReordered = $formOrder !== $originalOrder;
+
+            // Process todos based on whether reordering occurred
+            $updatedTodos = [];
+            $processedKeys = [];
+
+            if ($wasReordered) {
+                // Items were dragged - use form order for visible items
+                // First, add visible items in form order (respecting drag-and-drop)
+                foreach ($todos as $formTodo) {
+                    $key = ($formTodo['createDate'] ?? '') . '|' . ($formTodo['description'] ?? '');
+                    if (isset($originalTodosMap[$key])) {
+                        // This is an existing item - update it
+                        $updatedTodos[] = $formTodo;
+                        $processedKeys[$key] = true;
+                        $matchedOriginalKeys[$key] = true;
+                    }
+                }
+
+                // Then, append hidden items at the end (in their original order)
+                // This preserves hidden items' relative positions
+                $hiddenTodos = [];
+                foreach ($fullTodos as $originalTodo) {
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    if (!isset($processedKeys[$key])) {
+                        $hiddenTodos[] = $originalTodo;
+                    }
+                }
+
+                // Sort hidden todos by original index to maintain their relative order
+                usort($hiddenTodos, function($a, $b) {
+                    $indexA = $a['originalIndex'] ?? 999999;
+                    $indexB = $b['originalIndex'] ?? 999999;
+                    return $indexA <=> $indexB;
+                });
+
+                // Append hidden items after visible items
+                foreach ($hiddenTodos as $hiddenTodo) {
+                    $updatedTodos[] = $hiddenTodo;
+                }
+            } else {
+                // Items were NOT dragged - preserve original order exactly
+                // Process original todos in their original order
+                foreach ($fullTodos as $originalTodo) {
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+
+                    if (isset($formTodosMap[$key])) {
+                        // This item was in the form - update it with form data
+                        // But preserve its original position
+                        $updatedTodo = $formTodosMap[$key];
+                        // Preserve originalIndex so we can maintain order
+                        $updatedTodo['originalIndex'] = $originalTodo['originalIndex'];
+                        $updatedTodos[] = $updatedTodo;
+                        $matchedOriginalKeys[$key] = true;
+                    } else {
+                        // This item was not in the form (hidden) - keep it unchanged in original position
+                        $updatedTodos[] = $originalTodo;
+                    }
+                }
+
+                // Sort by originalIndex to maintain original file order
+                usort($updatedTodos, function($a, $b) {
+                    $indexA = $a['originalIndex'] ?? 999999;
+                    $indexB = $b['originalIndex'] ?? 999999;
+                    return $indexA <=> $indexB;
+                });
+            }
+
+            // Extract new recurring todos (these don't match any original todo)
+            // These should be appended at the very end
+            $newRecurringTodos = [];
+            foreach ($todos as $formTodo) {
+                $key = ($formTodo['createDate'] ?? '') . '|' . ($formTodo['description'] ?? '');
+                if (!isset($matchedOriginalKeys[$key])) {
+                    // This is a new item (from recurring completion)
+                    $newRecurringTodos[] = $formTodo;
                 }
             }
 
-            $todoWriter->writeTodos($username, $currentYear, $project, $mergedTodos);
+            // Append new recurring todos at the very end
+            // These are new items created from recurring completion and should always be last
+            foreach ($newRecurringTodos as $newTodo) {
+                $updatedTodos[] = $newTodo;
+            }
+
+            // Remove originalIndex before writing (it's only for internal ordering)
+            foreach ($updatedTodos as &$todo) {
+                unset($todo['originalIndex']);
+            }
+            unset($todo);
+
+            $todoWriter->writeTodos($username, $currentYear, $project, $updatedTodos);
             $success_message = "Todos updated successfully!";
         } catch (\Exception $e) {
             $error_message = "Error saving todos: " . $e->getMessage();
