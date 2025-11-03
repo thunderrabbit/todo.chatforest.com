@@ -688,8 +688,8 @@ class TodoRenderer
         $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
 
         foreach ($todos as $todo) {
-            // Items with links are exempt from hiding
-            if ($todo['hasLink']) {
+            // Incomplete items with links are never hidden
+            if (!$todo['isComplete'] && $todo['hasLink']) {
                 $filtered[] = $todo;
                 continue;
             }
@@ -706,6 +706,7 @@ class TodoRenderer
             }
 
             // Hide items started > 2 weeks ago if createDate exists, has time
+            // (but not incomplete items with links - already handled above)
             if (!empty($todo['createDate']) && $this->hasTimeComponent($todo['createDate'])) {
                 $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
                 if ($createDateTime !== null) {
@@ -731,7 +732,7 @@ class TodoRenderer
      */
     private function isItemOld(array $todo, string $clientTimezone): bool
     {
-        // Items with links are exempt
+        // Items with links are exempt from graying
         if ($todo['hasLink']) {
             return false;
         }
