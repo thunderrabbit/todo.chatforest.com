@@ -21,18 +21,22 @@ class TodoRenderer
      * @param array $todos Array of todo items
      * @param string $username The username
      * @param int $year The year (YYYY)
+     * @param string $clientTimezone Client timezone (e.g., "America/New_York")
      * @return string HTML content
      */
-    public function renderTodos(array $todos, string $username, int $year): string
+    public function renderTodos(array $todos, string $username, int $year, string $clientTimezone = 'UTC'): string
     {
-        if (empty($todos)) {
+        // Filter todos based on age rules
+        $filteredTodos = $this->filterTodos($todos, $clientTimezone);
+
+        if (empty($filteredTodos)) {
             return '<p class="no-todos">No todos yet. Create your first one!</p>';
         }
 
         $html = '<ul class="todo-list">';
 
-        foreach ($todos as $index => $todo) {
-            $html .= $this->renderTodoItem($todo, $index, $username, $year);
+        foreach ($filteredTodos as $index => $todo) {
+            $html .= $this->renderTodoItem($todo, $index, $username, $year, $clientTimezone);
         }
 
         $html .= '</ul>';
@@ -47,18 +51,25 @@ class TodoRenderer
      * @param int $index The index of the todo (used for form inputs)
      * @param string $username The username
      * @param int $year The year (YYYY)
+     * @param string $clientTimezone Client timezone (e.g., "America/New_York")
      * @return string HTML content
      */
-    private function renderTodoItem(array $todo, int $index, string $username, int $year): string
+    private function renderTodoItem(array $todo, int $index, string $username, int $year, string $clientTimezone = 'UTC'): string
     {
         $isComplete = $todo['isComplete'];
         $createDate = $todo['createDate'];
         $description = htmlspecialchars($todo['description']);
         $completeDate = $todo['completeDate'];
 
+        // Check if item should be styled as old (started over 1 week ago, has time component, not a link)
+        $isOld = $this->isItemOld($todo, $clientTimezone);
+
         $html = '<li class="todo-item';
         if ($isComplete) {
             $html .= ' todo-complete';
+        }
+        if ($isOld) {
+            $html .= ' todo-old';
         }
         $html .= '">';
 
@@ -129,16 +140,19 @@ class TodoRenderer
      * @param array $todos Array of todo items
      * @param string $actionUrl The form action URL
      * @param string $csrfToken The CSRF token
+     * @param string $username The username
+     * @param int $year The year (YYYY)
+     * @param string $clientTimezone Client timezone (e.g., "America/New_York")
      * @return string HTML form content
      */
-    public function renderTodoForm(array $todos, string $actionUrl, string $csrfToken, string $username = '', int $year = 0): string
+    public function renderTodoForm(array $todos, string $actionUrl, string $csrfToken, string $username = '', int $year = 0, string $clientTimezone = 'UTC'): string
     {
         $html = '<form method="POST" action="' . htmlspecialchars($actionUrl) . '" class="todo-form">';
         $html .= '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrfToken) . '">';
-        $html .= '<input type="hidden" name="client_timezone" class="client_timezone" value="">';
+        $html .= '<input type="hidden" name="client_timezone" class="client_timezone" value="' . htmlspecialchars($clientTimezone) . '">';
         $html .= '<input type="hidden" name="client_datetime" class="client_datetime" value="">';
 
-        $html .= $this->renderTodos($todos, $username, $year);
+        $html .= $this->renderTodos($todos, $username, $year, $clientTimezone);
 
         $html .= '<div class="todo-actions">';
         $html .= '<button type="submit" class="btn btn-primary">Save Changes</button>';
@@ -150,7 +164,8 @@ class TodoRenderer
                 var timezoneInput = form.querySelector(".client_timezone");
                 var datetimeInput = form.querySelector(".client_datetime");
                 if (timezoneInput && datetimeInput) {
-                    timezoneInput.value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    timezoneInput.value = timezone;
                     const now = new Date();
                     const year = now.getFullYear();
                     const month = String(now.getMonth() + 1).padStart(2, "0");
@@ -165,6 +180,22 @@ class TodoRenderer
             // Update timezone/datetime inputs when form is submitted
             var todoForm = document.querySelector(".todo-form");
             if (todoForm) {
+                // Set timezone immediately on page load
+                var timezoneInput = todoForm.querySelector(".client_timezone");
+                if (timezoneInput) {
+                    var clientTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    var currentUrl = new URL(window.location.href);
+                    // If timezone not in URL and input is empty/UTC, reload with timezone
+                    if (!currentUrl.searchParams.has("timezone") && (!timezoneInput.value || timezoneInput.value === "UTC")) {
+                        currentUrl.searchParams.set("timezone", clientTimezone);
+                        window.location.href = currentUrl.toString();
+                        // Page will navigate, no need to continue
+                    } else {
+                        // Always update the input with current timezone
+                        timezoneInput.value = clientTimezone;
+                    }
+                }
+
                 todoForm.addEventListener("submit", function() {
                     setTimezoneAndDatetime(todoForm);
                 });
@@ -642,5 +673,167 @@ class TodoRenderer
         $formatted = str_replace(['_', '-'], ' ', $project);
         // Capitalize first letter of each word
         return ucwords($formatted);
+    }
+
+    /**
+     * Filter todos based on age rules
+     *
+     * @param array $todos Array of todo items
+     * @param string $clientTimezone Client timezone
+     * @return array Filtered todos
+     */
+    private function filterTodos(array $todos, string $clientTimezone): array
+    {
+        $filtered = [];
+        $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
+
+        foreach ($todos as $todo) {
+            // Items with links are exempt from hiding
+            if ($todo['hasLink']) {
+                $filtered[] = $todo;
+                continue;
+            }
+
+            // Hide completed items if completeDate exists, has time, and is > 1 hour old
+            if ($todo['isComplete'] && !empty($todo['completeDate'])) {
+                $completeDateTime = $this->parseDate($todo['completeDate'], $clientTimezone);
+                if ($completeDateTime !== null && $this->hasTimeComponent($todo['completeDate'])) {
+                    $age = $now->getTimestamp() - $completeDateTime->getTimestamp();
+                    if ($age > 3600) { // More than 1 hour
+                        continue; // Skip this item
+                    }
+                }
+            }
+
+            // Hide items started > 2 weeks ago if createDate exists, has time
+            if (!empty($todo['createDate']) && $this->hasTimeComponent($todo['createDate'])) {
+                $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
+                if ($createDateTime !== null) {
+                    $age = $now->getTimestamp() - $createDateTime->getTimestamp();
+                    if ($age > 14 * 24 * 3600) { // More than 2 weeks (14 days)
+                        continue; // Skip this item
+                    }
+                }
+            }
+
+            $filtered[] = $todo;
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Check if item should be styled as old (started over 1 week ago)
+     *
+     * @param array $todo The todo item
+     * @param string $clientTimezone Client timezone
+     * @return bool True if item should be styled as old
+     */
+    private function isItemOld(array $todo, string $clientTimezone): bool
+    {
+        // Items with links are exempt
+        if ($todo['hasLink']) {
+            return false;
+        }
+
+        // Items without createDate are not old
+        if (empty($todo['createDate'])) {
+            return false;
+        }
+
+        // Items without time component are not old
+        if (!$this->hasTimeComponent($todo['createDate'])) {
+            return false;
+        }
+
+        $createDateTime = $this->parseDate($todo['createDate'], $clientTimezone);
+        if ($createDateTime === null) {
+            return false;
+        }
+
+        $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
+        $age = $now->getTimestamp() - $createDateTime->getTimestamp();
+
+        // More than 1 week (7 days)
+        return $age > 7 * 24 * 3600;
+    }
+
+    /**
+     * Check if date string has a time component
+     *
+     * @param string $dateStr Date string (e.g., "14:30:17 02-nov-2025" or "02-nov-2025")
+     * @return bool True if date has time component
+     */
+    private function hasTimeComponent(string $dateStr): bool
+    {
+        // Check for HH:MM:SS pattern at the start
+        return preg_match('/^\d{2}:\d{2}:\d{2}\s+/', $dateStr) === 1;
+    }
+
+    /**
+     * Parse date string to DateTime object
+     *
+     * Supports formats:
+     * - "HH:MM:SS DD-mon-YYYY" (e.g., "14:30:17 02-nov-2025")
+     * - "DD-mon-YYYY" (e.g., "02-nov-2025")
+     *
+     * @param string $dateStr Date string
+     * @param string $timezone Timezone string
+     * @return \DateTime|null DateTime object or null if parsing fails
+     */
+    private function parseDate(string $dateStr, string $timezone): ?\DateTime
+    {
+        $dateStr = trim($dateStr);
+        if (empty($dateStr)) {
+            return null;
+        }
+
+        try {
+            $timezoneObj = new \DateTimeZone($timezone);
+        } catch (\Exception $e) {
+            // Invalid timezone, fallback to UTC
+            $timezoneObj = new \DateTimeZone('UTC');
+        }
+
+        $months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+        // Check if it has time component (HH:MM:SS DD-mon-YYYY)
+        if (preg_match('/^(\d{2}:\d{2}:\d{2})\s+(\d{2})-([a-z]{3})-(\d{4})$/i', $dateStr, $matches)) {
+            $timePart = $matches[1];
+            $day = $matches[2];
+            $mon = strtolower($matches[3]);
+            $year = $matches[4];
+
+            $monIndex = array_search($mon, $months);
+            if ($monIndex !== false) {
+                $monNum = str_pad($monIndex + 1, 2, '0', STR_PAD_LEFT);
+                $phpDateStr = "$year-$monNum-$day $timePart";
+                try {
+                    return new \DateTime($phpDateStr, $timezoneObj);
+                } catch (\Exception $e) {
+                    return null;
+                }
+            }
+        } else {
+            // Just date part (DD-mon-YYYY)
+            if (preg_match('/^(\d{2})-([a-z]{3})-(\d{4})$/i', $dateStr, $matches)) {
+                $day = $matches[1];
+                $mon = strtolower($matches[2]);
+                $year = $matches[3];
+
+                $monIndex = array_search($mon, $months);
+                if ($monIndex !== false) {
+                    $monNum = str_pad($monIndex + 1, 2, '0', STR_PAD_LEFT);
+                    $phpDateStr = "$year-$monNum-$day 12:00:00";
+                    try {
+                        return new \DateTime($phpDateStr, $timezoneObj);
+                    } catch (\Exception $e) {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

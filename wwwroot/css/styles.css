@@ -130,6 +130,20 @@ body {
     background-color: #f8f8f8;
 }
 
+.todo-item.todo-old {
+    background-color: #f0f0f0;
+    color: #888;
+}
+
+.todo-item.todo-old .todo-description {
+    color: #888;
+}
+
+.todo-item.todo-old .todo-date-create,
+.todo-item.todo-old .todo-date-complete {
+    color: #aaa;
+}
+
 .todo-item.todo-error {
     background-color: #ffe6e6;
     border-color: #ff9999;

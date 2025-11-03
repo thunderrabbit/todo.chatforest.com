@@ -349,6 +349,13 @@ try {
     $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
     $todos = $todoReader->parseTodos($rawContent);
 
+    // Get client timezone (from POST if available, otherwise default to UTC)
+    // JavaScript will update this on form interactions
+    $clientTimezone = $_POST['client_timezone'] ?? $_GET['timezone'] ?? 'UTC';
+    if (empty($clientTimezone) || !in_array($clientTimezone, timezone_identifiers_list())) {
+        $clientTimezone = 'UTC';
+    }
+
     // Generate CSRF token for the form
     $csrfToken = $csrfProtect->getToken("todo_form_{$project}");
 
@@ -362,8 +369,8 @@ try {
     $page->set("error_message", $error_message);
     $page->set("success_message", $success_message);
     $page->set("csrf_token", $csrfToken);
-    $page->set("todosHtml", $todoRenderer->renderTodos($todos, $username, $currentYear));
-    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $csrfToken, $username, $currentYear));
+    $page->set("todosHtml", $todoRenderer->renderTodos($todos, $username, $currentYear, $clientTimezone));
+    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $csrfToken, $username, $currentYear, $clientTimezone));
 
     $inner = $page->grabTheGoods();
 
