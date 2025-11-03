@@ -293,7 +293,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
 
         // Write back to file
         try {
-            $todoWriter->writeTodos($username, $currentYear, $project, $todos);
+            // Read the full file content first (including hidden items)
+            $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+            $fullTodos = $todoReader->parseTodos($rawContent);
+
+            // Create a set of visible todos for quick lookup
+            $visibleTodosSet = [];
+            foreach ($todos as $visibleTodo) {
+                $key = ($visibleTodo['createDate'] ?? '') . '|' . ($visibleTodo['description'] ?? '');
+                $visibleTodosSet[$key] = true;
+            }
+
+            // Build the merged list: visible items in their new order, then hidden items
+            $mergedTodos = [];
+            // First, add all visible items in the order they appear in the form
+            foreach ($todos as $visibleTodo) {
+                $mergedTodos[] = $visibleTodo;
+            }
+            // Then, append hidden items at the end
+            foreach ($fullTodos as $fullTodo) {
+                $key = ($fullTodo['createDate'] ?? '') . '|' . ($fullTodo['description'] ?? '');
+                if (!isset($visibleTodosSet[$key])) {
+                    // This item is hidden - add it at the end
+                    $mergedTodos[] = $fullTodo;
+                }
+            }
+
+            $todoWriter->writeTodos($username, $currentYear, $project, $mergedTodos);
             $success_message = "Todos updated successfully!";
         } catch (\Exception $e) {
             $error_message = "Error saving todos: " . $e->getMessage();
