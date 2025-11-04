@@ -128,6 +128,11 @@ class TodoRenderer
         $html .= '</span></label>';
 
         // Hidden inputs to preserve todo data
+        // Original values are used to match items even after editing
+        $originalCreateDate = $todo['createDate'] ?? '';
+        $originalDescription = $todo['description'] ?? '';
+        $html .= '<input type="hidden" name="todo_data[' . $index . '][originalCreateDate]" value="' . htmlspecialchars($originalCreateDate) . '">';
+        $html .= '<input type="hidden" name="todo_data[' . $index . '][originalDescription]" value="' . htmlspecialchars($originalDescription) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][description]" value="' . htmlspecialchars($todo['description']) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][createDate]" value="' . htmlspecialchars($todo['createDate'] ?? '') . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][completeDate]" value="' . htmlspecialchars($todo['completeDate'] ?? '') . '">';
