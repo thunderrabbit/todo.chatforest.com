@@ -17,6 +17,14 @@
         </div>
     <?php endif; ?>
 
+    <div class="todo-actions" style="margin-bottom: 20px;">
+        <form method="POST" action="" style="display: inline;">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+            <input type="hidden" name="action" value="sort_todos">
+            <button type="submit" class="btn btn-secondary">Sort Todos</button>
+        </form>
+    </div>
+
     <div class="todo-new-form">
         <h2>Add New Todo</h2>
         <form method="POST" action="" class="todo-new-item">

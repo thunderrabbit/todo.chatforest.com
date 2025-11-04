@@ -245,6 +245,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// Handle sorting todos
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'sort_todos' && $project !== null) {
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    if (!$csrfProtect->validateToken($csrf_token)) {
+        $error_message = "Invalid security token. Please try again.";
+    } else {
+        try {
+            // Read existing todos
+            $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+            $todos = $todoReader->parseTodos($rawContent);
+
+            // Sort todos using the algorithm
+            $sortedTodos = \Todo\TodoSorter::sortTodos($todos);
+
+            // Write sorted todos back
+            $todoWriter->writeTodos($username, $currentYear, $project, $sortedTodos);
+            $success_message = "Todos sorted successfully!";
+
+            // Redirect to refresh the page
+            header("Location: /do/{$project}");
+            exit;
+        } catch (\Exception $e) {
+            $error_message = "Error sorting todos: " . $e->getMessage();
+        }
+    }
+}
+
 // Handle form submission to save todos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_POST['todo_data']) && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';
