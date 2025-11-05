@@ -160,6 +160,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// Handle deleting todo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_todo' && $project !== null) {
+    $csrf_token = $_POST['csrf_token'] ?? '';
+
+    // Check if this is an AJAX request
+    $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+
+    if (!$csrfProtect->validateToken($csrf_token)) {
+        $error_message = "Invalid security token. Please try again.";
+    } else {
+        $originalCreateDate = $_POST['todo_originalCreateDate'] ?? '';
+        $originalDescription = $_POST['todo_originalDescription'] ?? '';
+
+        if (empty($originalCreateDate) && empty($originalDescription)) {
+            $error_message = "Todo item not specified.";
+        } else {
+            try {
+                // Read existing todos
+                $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+                $currentTodos = $todoReader->parseTodos($rawContent);
+
+                // Find and remove the item (match by originalCreateDate and originalDescription)
+                $updatedTodos = [];
+                $found = false;
+                foreach ($currentTodos as $todo) {
+                    $todoCreateDate = $todo['createDate'] ?? '';
+                    $todoDescription = $todo['description'] ?? '';
+
+                    // Match using original values (same logic as save)
+                    if ($todoCreateDate === $originalCreateDate && $todoDescription === $originalDescription) {
+                        // Skip this one - it's being deleted
+                        $found = true;
+                        continue;
+                    }
+                    $updatedTodos[] = $todo;
+                }
+
+                if (!$found) {
+                    $error_message = "Todo item not found.";
+                } else {
+                    // Sort updated list before writing
+                    $updatedTodos = \Todo\TodoSorter::sortTodos($updatedTodos);
+                    $todoWriter->writeTodos($username, $currentYear, $project, $updatedTodos);
+                    $success_message = "Todo deleted successfully!";
+                }
+            } catch (\Exception $e) {
+                $error_message = "Error deleting todo: " . $e->getMessage();
+            }
+        }
+    }
+
+    // If AJAX request, return JSON and exit
+    if ($isAjax) {
+        header('Content-Type: application/json');
+        if (!empty($error_message)) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => $error_message]);
+        } else {
+            // Generate new CSRF token for next request
+            $newToken = $csrfProtect->getToken("todo_form_{$project}");
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Deleted', 'csrf_token' => $newToken]);
+        }
+        exit;
+    }
+}
+
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
     $csrf_token = $_POST['csrf_token'] ?? '';

@@ -127,6 +127,9 @@ class TodoRenderer
 
         $html .= '</span></label>';
 
+        // Delete button
+        $html .= '<button type="button" class="todo-delete-btn" data-index="' . $index . '" data-createdate="' . htmlspecialchars($createDate ?? '') . '" data-description="' . htmlspecialchars($todo['description']) . '" title="Delete">🗑️</button>';
+
         // Hidden inputs to preserve todo data
         // Original values are used to match items even after editing
         $originalCreateDate = $todo['createDate'] ?? '';
@@ -691,6 +694,94 @@ class TodoRenderer
                         }
                     });
                 }
+
+                // Delete button functionality
+                var deleteButtons = todoForm.querySelectorAll(".todo-delete-btn");
+
+                // Attach click handlers to delete buttons
+                deleteButtons.forEach(function(deleteBtn) {
+                    deleteBtn.addEventListener("click", function(e) {
+                        e.stopPropagation(); // Prevent triggering other click handlers
+                        var todoItem = deleteBtn.closest(".todo-item");
+
+                        // Show confirmation dialog
+                        if (!confirm("Delete?")) {
+                            return; // User cancelled
+                        }
+
+                        // Get todo data from the item
+                        var checkbox = todoItem.querySelector(".todo-checkbox");
+                        var index = checkbox.name.match(/\[(\d+)\]/)[1];
+                        var hiddenInputs = todoItem.querySelectorAll("input[type=hidden]");
+                        var todoData = {};
+
+                        // Extract todo data from hidden inputs
+                        hiddenInputs.forEach(function(hidden) {
+                            var match = hidden.name.match(/todo_data\[(\d+)\]\[(\w+)\]/);
+                            if (match && match[1] === index) {
+                                todoData[match[2]] = hidden.value;
+                            }
+                        });
+
+                        // Use original values for matching (same as in save)
+                        var originalCreateDate = todoData.originalCreateDate || todoData.createDate || "";
+                        var originalDescription = todoData.originalDescription || todoData.description || "";
+
+                        // Show deleting state
+                        todoItem.classList.add("saving");
+
+                        // Set timezone/datetime
+                        setTimezoneAndDatetime(todoForm);
+
+                        // Build FormData for deletion
+                        var formData = new FormData(todoForm);
+                        formData.append("action", "delete_todo");
+                        formData.append("todo_originalCreateDate", originalCreateDate);
+                        formData.append("todo_originalDescription", originalDescription);
+
+                        // Send AJAX request
+                        fetch(todoForm.action, {
+                            method: "POST",
+                            headers: {
+                                "X-Requested-With": "XMLHttpRequest"
+                            },
+                            body: formData
+                        })
+                        .then(function(response) {
+                            if (!response.ok) {
+                                throw new Error("Delete failed");
+                            }
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            // Success - remove the item from DOM
+                            todoItem.remove();
+                            todoItem.classList.remove("saving");
+
+                            // Update CSRF token if provided
+                            if (data.csrf_token) {
+                                var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
+                                allCsrfInputs.forEach(function(csrfInput) {
+                                    csrfInput.value = data.csrf_token;
+                                });
+                            }
+
+                            // If no todos left, reload the page to show empty state
+                            var remainingTodos = todoForm.querySelectorAll(".todo-item");
+                            if (remainingTodos.length === 0) {
+                                window.location.reload();
+                            }
+                        })
+                        .catch(function(error) {
+                            // Failure - show error state
+                            todoItem.classList.remove("saving");
+                            todoItem.classList.add("todo-error");
+                            setTimeout(function() {
+                                todoItem.classList.remove("todo-error");
+                            }, 2000);
+                        });
+                    });
+                });
             }
         </script>';
 
