@@ -755,12 +755,12 @@ class TodoRenderer
         foreach ($todos as $todo) {
             // Skip completed todos (they will be handled separately)
             if ($todo['isComplete']) {
-                // Hide completed items if completeDate exists, has time, and is > 1 hour old
+                // Hide completed items if completeDate exists, has time, and is > 5 minutes old
                 if (!empty($todo['completeDate'])) {
                     $completeDateTime = $this->parseDate($todo['completeDate'], $clientTimezone);
                     if ($completeDateTime !== null && $this->hasTimeComponent($todo['completeDate'])) {
                         $age = $now->getTimestamp() - $completeDateTime->getTimestamp();
-                        if ($age > 3600) { // More than 1 hour
+                        if ($age > 300) { // More than 5 minutes
                             continue; // Skip this item
                         }
                     }
