@@ -110,7 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $updatedTodos[] = $todo;
                 }
 
-                // Write updated current list
+                // Sort updated current list before writing
+                $updatedTodos = \Todo\TodoSorter::sortTodos($updatedTodos);
                 $todoWriter->writeTodos($username, $currentYear, $project, $updatedTodos);
 
                 // Now add to target list
@@ -133,7 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'linkFile' => $todoLinkFile,
                 ];
 
-                // Write target list
+                // Sort target list before writing
+                $targetTodos = \Todo\TodoSorter::sortTodos($targetTodos);
                 $todoWriter->writeTodos($username, $currentYear, $targetFile, $targetTodos);
 
                 $success_message = "Todo moved successfully!";
@@ -234,6 +236,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ];
 
                 $existingTodos[] = $newTodo;
+
+                // Sort todos according to preferred order
+                $existingTodos = \Todo\TodoSorter::sortTodos($existingTodos);
 
                 // Write back to file
                 $todoWriter->writeTodos($username, $currentYear, $project, $existingTodos);
@@ -514,6 +519,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
                 unset($todo['originalIndex']);
             }
             unset($todo);
+
+            // Sort todos according to preferred order
+            $updatedTodos = \Todo\TodoSorter::sortTodos($updatedTodos);
 
             $todoWriter->writeTodos($username, $currentYear, $project, $updatedTodos);
             $success_message = "Todos updated successfully!";
