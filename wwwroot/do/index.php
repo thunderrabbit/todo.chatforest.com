@@ -428,10 +428,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
                 foreach ($todos as $formTodo) {
                     // Use original values to find the matching original todo
                     $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
-                    if (isset($originalTodosMap[$originalKey])) {
+                    if (isset($formTodosMap[$originalKey])) {
                         // This is an existing item - update it with edited values
                         // Remove original fields before saving (they're only for matching)
-                        $todoToSave = $formTodo;
+                        $todoToSave = $formTodosMap[$originalKey];
                         unset($todoToSave['originalCreateDate']);
                         unset($todoToSave['originalDescription']);
                         $updatedTodos[] = $todoToSave;

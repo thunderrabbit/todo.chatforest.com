@@ -219,6 +219,59 @@ class TodoRenderer
                         var checkbox = e.target;
                         var todoItem = checkbox.closest(".todo-item");
                         var originalChecked = checkbox.checked; // After change event, this is the NEW state
+                        var index = checkbox.name.match(/\[(\d+)\]/)[1];
+
+                        // Update completion date in the form based on checkbox state
+                        var hiddenInputs = todoItem.querySelectorAll("input[type=hidden]");
+                        var completeDateInput = null;
+                        for (var i = 0; i < hiddenInputs.length; i++) {
+                            if (hiddenInputs[i].name === "todo_data[" + index + "][completeDate]") {
+                                completeDateInput = hiddenInputs[i];
+                                break;
+                            }
+                        }
+                        if (completeDateInput) {
+                            if (checkbox.checked) {
+                                // If being checked and does not already have a completion date, set it
+                                var hasCompletionDate = completeDateInput.value && completeDateInput.value.trim().length > 0;
+                                if (!hasCompletionDate) {
+                                    // Set timezone/datetime first to get current client time
+                                    setTimezoneAndDatetime(todoForm);
+                                    var datetimeInput = todoForm.querySelector(".client_datetime");
+                                    var timezoneInput = todoForm.querySelector(".client_timezone");
+
+                                    if (datetimeInput && timezoneInput) {
+                                        // Parse the datetime and format it as HH:MM:SS DD-Mon-YYYY
+                                        var clientDatetime = datetimeInput.value; // Format: "YYYY-MM-DD HH:MM:SS"
+                                        if (clientDatetime) {
+                                            var dt = new Date(clientDatetime);
+                                            var hours = String(dt.getHours()).padStart(2, "0");
+                                            var minutes = String(dt.getMinutes()).padStart(2, "0");
+                                            var seconds = String(dt.getSeconds()).padStart(2, "0");
+                                            var day = String(dt.getDate()).padStart(2, "0");
+                                            var months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+                                            var month = months[dt.getMonth()];
+                                            var year = dt.getFullYear();
+                                            completeDateInput.value = hours + ":" + minutes + ":" + seconds + " " + day + "-" + month + "-" + year;
+
+                                            // Also update the display
+                                            var completeDateSpan = todoItem.querySelector(".todo-date-complete");
+                                            if (completeDateSpan) {
+                                                completeDateSpan.textContent = completeDateInput.value;
+                                            }
+                                        }
+                                    }
+                                }
+                                // If it already has a date, leave it alone (preserves existing completion date)
+                            } else {
+                                // If being unchecked, clear the completion date
+                                completeDateInput.value = "";
+                                var completeDateSpan = todoItem.querySelector(".todo-date-complete");
+                                if (completeDateSpan) {
+                                    completeDateSpan.remove();
+                                }
+                            }
+                        }
 
                         // Set timezone/datetime
                         setTimezoneAndDatetime(todoForm);
@@ -700,7 +753,7 @@ class TodoRenderer
         $now = new \DateTime('now', new \DateTimeZone($clientTimezone));
 
         foreach ($todos as $todo) {
-            // Skip completed todos (they'll be handled separately)
+            // Skip completed todos (they will be handled separately)
             if ($todo['isComplete']) {
                 // Hide completed items if completeDate exists, has time, and is > 1 hour old
                 if (!empty($todo['completeDate'])) {
