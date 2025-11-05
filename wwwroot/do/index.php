@@ -354,6 +354,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
     if (!$csrfProtect->validateToken($csrf_token)) {
         $error_message = "Invalid security token. Please try again.";
     } else {
+        // Read original todos first to detect transitions from incomplete to complete
+        $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
+        $originalTodos = $todoReader->parseTodos($rawContent);
+
+        // Build a map of original todos by key for quick lookup
+        $originalTodosMap = [];
+        foreach ($originalTodos as $originalTodo) {
+            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+            $originalTodosMap[$key] = $originalTodo;
+        }
+
         // Update todo completion status based on form submission
         $todos = [];
         $checked = $_POST['todo'] ?? [];
@@ -383,6 +394,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
             // Update completion status
             $todo['isComplete'] = isset($checked[$index]);
 
+            // Check if this todo was just completed (transitioned from incomplete to complete)
+            $originalKey = $originalCreateDate . '|' . $originalDescription;
+            $wasIncomplete = true;
+            if (isset($originalTodosMap[$originalKey])) {
+                $originalTodo = $originalTodosMap[$originalKey];
+                $wasIncomplete = !($originalTodo['isComplete'] ?? false);
+            }
+
             // Update completion date if just completed
             if ($todo['isComplete'] && empty($todoData['completeDate'])) {
                 // Use current timestamp for completion
@@ -391,19 +410,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
                 try {
                     $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                     $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
-
-                    // Track this as newly completed for recurring logic
-                    if (!empty($todo['recurringMarker'])) {
-                        $newlyCompletedTodos[] = $todo;
-                    }
                 } catch (\Exception $e) {
                     $todo['completeDate'] = date('H:i:s d-M-Y');
-                    if (!empty($todo['recurringMarker'])) {
-                        $newlyCompletedTodos[] = $todo;
-                    }
                 }
             } elseif (!$todo['isComplete']) {
                 $todo['completeDate'] = '';
+            }
+
+            // Track as newly completed if it transitioned from incomplete to complete and has recurring marker
+            if ($todo['isComplete'] && $wasIncomplete && !empty($todo['recurringMarker'])) {
+                // Ensure completeDate is set (use the one from form or set it now)
+                if (empty($todo['completeDate'])) {
+                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                    try {
+                        $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
+                        $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
+                    } catch (\Exception $e) {
+                        $todo['completeDate'] = date('H:i:s d-M-Y');
+                    }
+                }
+                $newlyCompletedTodos[] = $todo;
             }
 
             $todos[] = $todo;
