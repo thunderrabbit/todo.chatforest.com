@@ -197,8 +197,8 @@ class TodoReader
             return '#d';
         }
 
-        // Match #w:mon:tue:fri for weekly (3-letter day codes, colon-separated)
-        if (preg_match('/#w:([a-z]{3}(?::[a-z]{3})*)/i', $description, $matches)) {
+        // Match #w:mon,tue,fri for weekly (3-letter day codes, comma-separated after #w:)
+        if (preg_match('/#w:([a-z]{3}(?:,[a-z]{3})*)/i', $description, $matches)) {
             return '#w:' . strtolower($matches[1]);
         }
 

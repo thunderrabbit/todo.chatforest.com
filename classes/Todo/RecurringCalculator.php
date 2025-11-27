@@ -5,14 +5,14 @@ namespace Todo;
 /**
  * RecurringCalculator - calculates next occurrence dates for recurring todos
  *
- * Handles #d (daily), #w:mon:tue:fri (weekly), and #m:1,11,21 (monthly) patterns
+ * Handles #d (daily), #w:mon,tue,fri (weekly), and #m:1,11,21 (monthly) patterns
  */
 class RecurringCalculator
 {
     /**
      * Calculate the next occurrence date for a recurring todo
      *
-     * @param string $recurringMarker The marker (e.g., '#d', '#w:mon:tue:fri', '#m:1,11,21')
+     * @param string $recurringMarker The marker (e.g., '#d', '#w:mon,tue,fri', '#m:1,11,21')
      * @param string $completionDate Completion date in format "HH:MM:SS DD-mon-YYYY"
      * @param string $createDate Original create date in format "HH:MM:SS DD-mon-YYYY" (for time preservation)
      * @param string $timezone Timezone string (e.g., "America/New_York")
@@ -140,7 +140,7 @@ class RecurringCalculator
 
     /**
      * Parse weekly marker to array of day numbers
-     * #w:mon:tue:fri -> [1, 2, 5] (Monday=1, Tuesday=2, Friday=5)
+     * #w:mon,tue,fri -> [1, 2, 5] (Monday=1, Tuesday=2, Friday=5)
      *
      * @param string $marker The weekly marker
      * @return array Array of day numbers (0=Sunday, 6=Saturday)
@@ -152,7 +152,8 @@ class RecurringCalculator
             return [];
         }
 
-        $dayCodes = explode(':', $matches[1]);
+        // Split by comma
+        $dayCodes = explode(',', $matches[1]);
         $dayMap = [
             'sun' => 0, 'mon' => 1, 'tue' => 2, 'wed' => 3,
             'thu' => 4, 'fri' => 5, 'sat' => 6
