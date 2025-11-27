@@ -26,6 +26,7 @@ use InvalidArgumentException;
  * when using Request81 as vs. the original Request.
  *
  * @package mlaphp/mlaphp
+ * @property array<string, mixed> $session prevent errors in static analysis
  */
 class Request
 {
@@ -34,52 +35,53 @@ class Request
      *
      * @var array
      */
-    public $cookie = array();
+    public $cookie = [];
 
     /**
      * A copy of $_ENV.
      *
      * @var array
      */
-    public $env = array();
+    public $env = [];
 
     /**
      * A copy of $_FILES.
      *
      * @var array
      */
-    public $files = array();
+    public $files = [];
 
     /**
      * A copy of $_GET.
      *
      * @var array
      */
-    public $get = array();
+    public $get = [];
 
     /**
      * A copy of $_POST.
      *
      * @var array
      */
-    public $post = array();
+    public $post = [];
 
     /**
      * A copy of $_REQUEST.
      *
      * @var array
      */
-    public $request = array();
+    public $request = [];
 
     /**
      * A copy of $_SERVER.
      *
      * @var array
      */
-    public $server = array();
+    public $server = [];
 
     /**
      * Constructor.
+     * @phan-suppress PhanNoopVariable
      */
     public function __construct()
     {
@@ -125,18 +127,18 @@ class Request
     /**
      * Provides a magic **reference** to $_SESSION.
      *
-     * @param string $property The property name; must be 'session'.
+     * @param string $name The property name; must be 'session'.
      * @return array A reference to $_SESSION.
      * @throws InvalidArgumentException for any $name other than 'session'.
      * @throws DomainException when $_SESSION is not set.
      */
-    public function &__get($name)
+    public function &__get(string $name)
     {
-        if ($name != 'session') {
+        if ($name !== 'session') {
             throw new InvalidArgumentException($name);
         }
 
-        if (!isset($_SESSION)) {
+        if (! isset($_SESSION)) {
             throw new DomainException('$_SESSION is not set');
         }
 
@@ -149,9 +151,9 @@ class Request
      * @param string $name The property name; must be 'session'.
      * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name)
     {
-        if ($name != 'session') {
+        if ($name !== 'session') {
             throw new InvalidArgumentException;
         }
 
