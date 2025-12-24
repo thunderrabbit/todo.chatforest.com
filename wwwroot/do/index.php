@@ -54,34 +54,23 @@ if (empty($pathParts)) {
 
 // Handle creating a new project file
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project' && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        try {
+    try {
             // Create empty project file
             $todoWriter->createEmptyFile($username, $currentYear, $project);
             // Redirect to the newly created project
             header("Location: /do/{$project}");
             exit;
-        } catch (\Exception $e) {
-            $error_message = "Error creating project: " . $e->getMessage();
-        }
+    } catch (\Exception $e) {
+        $error_message = "Error creating project: " . $e->getMessage();
     }
 }
 
 // Handle moving todo to another list
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'move_todo' && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        $targetFile = $_POST['target_file'] ?? '';
+    $targetFile = $_POST['target_file'] ?? '';
 
         if (empty($targetFile)) {
             $error_message = "Target file not specified.";
@@ -143,7 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $error_message = "Error moving todo: " . $e->getMessage();
             }
         }
-    }
 
     // If AJAX request, return JSON and exit
     if ($isAjax) {
@@ -152,9 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            // Generate new CSRF token for next request
-            $newToken = $csrfProtect->getToken("todo_form_{$project}");
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Moved', 'csrf_token' => $newToken]);
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Moved']);
         }
         exit;
     }
@@ -162,15 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle deleting todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_todo' && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        $originalCreateDate = $_POST['todo_originalCreateDate'] ?? '';
+    $originalCreateDate = $_POST['todo_originalCreateDate'] ?? '';
         $originalDescription = $_POST['todo_originalDescription'] ?? '';
 
         if (empty($originalCreateDate) && empty($originalDescription)) {
@@ -209,7 +190,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $error_message = "Error deleting todo: " . $e->getMessage();
             }
         }
-    }
 
     // If AJAX request, return JSON and exit
     if ($isAjax) {
@@ -218,9 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            // Generate new CSRF token for next request
-            $newToken = $csrfProtect->getToken("todo_form_{$project}");
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Deleted', 'csrf_token' => $newToken]);
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Deleted']);
         }
         exit;
     }
@@ -228,12 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        $newTodoText = trim($_POST['new_todo'] ?? '');
+    $newTodoText = trim($_POST['new_todo'] ?? '');
 
         if (!empty($newTodoText)) {
             try {
@@ -309,21 +282,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 // Write back to file
                 $todoWriter->writeTodos($username, $currentYear, $project, $existingTodos);
                 $success_message = "Todo added successfully!";
-            } catch (\Exception $e) {
-                $error_message = "Error adding todo: " . $e->getMessage();
-            }
+        } catch (\Exception $e) {
+            $error_message = "Error adding todo: " . $e->getMessage();
         }
     }
 }
 
 // Handle sorting todos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'sort_todos' && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        try {
+    try {
             // Read existing todos
             $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
             $todos = $todoReader->parseTodos($rawContent);
@@ -338,23 +305,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             // Redirect to refresh the page
             header("Location: /do/{$project}");
             exit;
-        } catch (\Exception $e) {
-            $error_message = "Error sorting todos: " . $e->getMessage();
-        }
+    } catch (\Exception $e) {
+        $error_message = "Error sorting todos: " . $e->getMessage();
     }
 }
 
 // Handle form submission to save todos
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_POST['todo_data']) && $project !== null) {
-    $csrf_token = $_POST['csrf_token'] ?? '';
-
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    if (!$csrfProtect->validateToken($csrf_token)) {
-        $error_message = "Invalid security token. Please try again.";
-    } else {
-        // Read original todos first to detect transitions from incomplete to complete
+    // Read original todos first to detect transitions from incomplete to complete
         $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
         $originalTodos = $todoReader->parseTodos($rawContent);
 
@@ -620,7 +581,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
         } catch (\Exception $e) {
             $error_message = "Error saving todos: " . $e->getMessage();
         }
-    }
 
     // If AJAX request, return JSON and exit
     if ($isAjax) {
@@ -629,9 +589,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_PO
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            // Generate new CSRF token for next request
-            $newToken = $csrfProtect->getToken("todo_form_{$project}");
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved', 'csrf_token' => $newToken]);
+            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved']);
         }
         exit;
     }
@@ -678,9 +636,6 @@ try {
         $clientTimezone = 'UTC';
     }
 
-    // Generate CSRF token for the form
-    $csrfToken = $csrfProtect->getToken("todo_form_{$project}");
-
     // Render the page
     $page = new \Template(config: $config);
     $page->setTemplate("todos/view.tpl.php");
@@ -690,9 +645,8 @@ try {
     $page->set("todos", $todos);
     $page->set("error_message", $error_message);
     $page->set("success_message", $success_message);
-    $page->set("csrf_token", $csrfToken);
     $page->set("todosHtml", $todoRenderer->renderTodos($todos, $username, $currentYear, $clientTimezone));
-    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $csrfToken, $username, $currentYear, $clientTimezone));
+    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $username, $currentYear, $clientTimezone));
 
     $inner = $page->grabTheGoods();
 
@@ -706,15 +660,12 @@ try {
 
 } catch (\Exception $e) {
     // File doesn't exist - show empty page or 404
-    $csrfToken = $csrfProtect->getToken("create_project_{$project}");
-
     $page = new \Template(config: $config);
     $page->setTemplate("todos/404.tpl.php");
     $page->set("username", $username);
     $page->set("project", $project);
     $page->set("year", $currentYear);
     $page->set("error", $e->getMessage());
-    $page->set("csrf_token", $csrfToken);
 
     $inner = $page->grabTheGoods();
 

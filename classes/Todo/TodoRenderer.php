@@ -160,10 +160,9 @@ class TodoRenderer
      * @param string $clientTimezone Client timezone (e.g., "America/New_York")
      * @return string HTML form content
      */
-    public function renderTodoForm(array $todos, string $actionUrl, string $csrfToken, string $username = '', int $year = 0, string $clientTimezone = 'UTC'): string
+    public function renderTodoForm(array $todos, string $actionUrl, string $username = '', int $year = 0, string $clientTimezone = 'UTC'): string
     {
         $html = '<form method="POST" action="' . htmlspecialchars($actionUrl) . '" class="todo-form">';
-        $html .= '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrfToken) . '">';
         $html .= '<input type="hidden" name="client_timezone" class="client_timezone" value="' . htmlspecialchars($clientTimezone) . '">';
         $html .= '<input type="hidden" name="client_datetime" class="client_datetime" value="">';
 
@@ -306,14 +305,6 @@ class TodoRenderer
                             todoItem.classList.remove("saving");
                             // Remove any existing error state
                             todoItem.classList.remove("todo-error");
-
-                            // Update CSRF token in all forms on the page
-                            if (data.csrf_token) {
-                                var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
-                                allCsrfInputs.forEach(function(csrfInput) {
-                                    csrfInput.value = data.csrf_token;
-                                });
-                            }
                         })
                         .catch(function(error) {
                             // Failure - revert checkbox
@@ -427,13 +418,7 @@ class TodoRenderer
                                     return response.json();
                                 })
                                 .then(function(data) {
-                                    // Update CSRF token if provided
-                                    if (data.csrf_token) {
-                                        var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
-                                        allCsrfInputs.forEach(function(csrfInput) {
-                                            csrfInput.value = data.csrf_token;
-                                        });
-                                    }
+                                    // Success
                                 })
                                 .catch(function(error) {
                                     // Restore the item on error
@@ -507,14 +492,6 @@ class TodoRenderer
                                 // Success - remove saving state
                                 todoList.classList.remove("saving");
                                 todoList.classList.remove("todo-error");
-
-                                // Update CSRF token in all forms on the page
-                                if (data.csrf_token) {
-                                    var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
-                                    allCsrfInputs.forEach(function(csrfInput) {
-                                        csrfInput.value = data.csrf_token;
-                                    });
-                                }
                             })
                             .catch(function(error) {
                                 // Failure - show error state
@@ -757,14 +734,6 @@ class TodoRenderer
                             // Success - remove the item from DOM
                             todoItem.remove();
                             todoItem.classList.remove("saving");
-
-                            // Update CSRF token if provided
-                            if (data.csrf_token) {
-                                var allCsrfInputs = document.querySelectorAll("input[name=\\"csrf_token\\"]");
-                                allCsrfInputs.forEach(function(csrfInput) {
-                                    csrfInput.value = data.csrf_token;
-                                });
-                            }
 
                             // If no todos left, reload the page to show empty state
                             var remainingTodos = todoForm.querySelectorAll(".todo-item");

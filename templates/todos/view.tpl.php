@@ -19,7 +19,6 @@
 
     <div class="todo-actions" style="margin-bottom: 20px;">
         <form method="POST" action="" style="display: inline;">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
             <input type="hidden" name="action" value="sort_todos">
             <button type="submit" class="btn btn-secondary">Sort Todos</button>
         </form>
@@ -28,7 +27,6 @@
     <div class="todo-new-form">
         <h2>Add New Todo</h2>
         <form method="POST" action="" class="todo-new-item">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
             <input type="hidden" name="action" value="add_todo">
             <input type="hidden" name="client_timezone" id="client_timezone" value="">
             <input type="hidden" name="client_datetime" id="client_datetime" value="">
