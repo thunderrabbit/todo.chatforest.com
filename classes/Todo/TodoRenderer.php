@@ -172,7 +172,7 @@ class TodoRenderer
         $html .= '<button type="submit" class="btn btn-primary">Save Changes</button>';
         $html .= '</div>';
 
-        $html .= '<script>/js/todo-form.js</script>';
+        $html .= '<script src="/js/todo-form.js"></script>';
 
         $html .= '</form>';
 
