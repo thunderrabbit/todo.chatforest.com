@@ -30,6 +30,43 @@ function print_rob($object, $exit = true)
     }
 }
 
+/**
+ * Log debug output to a file in za_rob_logs/yyyy_mm_dd_$suffix.log
+ * Similar to print_rob but writes to a log file instead of echoing to screen
+ *
+ * @param mixed $object The object or data to log
+ * @param string $suffix The suffix for the log filename (default: "log")
+ * @return void
+ */
+function log_rob(mixed $object, string $suffix = "logged"): void
+{
+    $logDir = __DIR__ . '/za_rob_logs';
+
+    // Ensure log directory exists
+    if (!is_dir($logDir)) {
+        mkdir($logDir, 0755, true);
+    }
+
+    // Create log filename with current date
+    $date = date('Y_m_d');
+    $logFile = "{$logDir}/{$date}_{$suffix}.log";
+
+    // Prepare log content
+    $timestamp = date('Y-m-d H:i:s');
+    $logContent = "\n[{$timestamp}]\n";
+
+    if (is_object($object) && method_exists($object, "toArray")) {
+        $logContent .= "ResultSet => " . print_r($object->toArray(), true);
+    } else {
+        $logContent .= print_r($object, true);
+    }
+
+    $logContent .= "\n" . str_repeat('-', 80) . "\n";
+
+    // Write to log file
+    file_put_contents($logFile, $logContent, FILE_APPEND | LOCK_EX);
+}
+
 try {
     $config = new \Config();
 } catch (\Exception $e) {
