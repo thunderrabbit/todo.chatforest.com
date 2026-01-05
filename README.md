@@ -90,6 +90,16 @@ The system automatically tracks when todos are created and finished, making it e
 
 ---
 
+## 🤖 Testing Credentials (Antigravity AI)
+
+For automated testing and debugging, login credentials are stored in:
+- **File**: `.antigravity-login` (in project root)
+- **Website**: https://todo.chatforest.com/login/
+- **Username**: antigravity
+- **Password**: See `.antigravity-login` file
+
+---
+
 ## 💡 Based on
 
 Originally created during work on the **MarbleTrack3** stop-motion animation archive (June 2025). Designed for fun and minimal overhead.
