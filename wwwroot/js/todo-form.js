@@ -394,14 +394,14 @@ if (todoForm) {
         var description = item.dataset.description || "";
         var completeDate = item.dataset.completedate || "";
 
-        var editHtml = \'<div class="todo-editing">\';
-        editHtml += \'<input type="text" class="todo-edit-field" placeholder="Start Date (e.g., 14:30:17 02-nov-2025)" value="\' + createDate + \'" data-field="createDate">\';
-        editHtml += \'<input type="text" class="todo-edit-field" placeholder="Description" value="\' + description + \'" data-field="description">\';
-        editHtml += \'<input type="text" class="todo-edit-field" placeholder="End Date (e.g., 15:45:30 05-nov-2025)" value="\' + completeDate + \'" data-field="completeDate">\';
-        editHtml += \'<div class="todo-edit-buttons">\';
-        editHtml += \'<button type="button" class="todo-edit-btn save">Save</button>\';
-        editHtml += \'<button type="button" class="todo-edit-btn cancel">Cancel</button>\';
-        editHtml += \'</div></div>\';
+        var editHtml = '<div class="todo-editing">';
+        editHtml += '<input type="text" class="todo-edit-field" placeholder="Start Date (e.g., 14:30:17 02-nov-2025)" value="' + createDate + '" data-field="createDate">';
+        editHtml += '<input type="text" class="todo-edit-field" placeholder="Description" value="' + description + '" data-field="description">';
+        editHtml += '<input type="text" class="todo-edit-field" placeholder="End Date (e.g., 15:45:30 05-nov-2025)" value="' + completeDate + '" data-field="completeDate">';
+        editHtml += '<div class="todo-edit-buttons">';
+        editHtml += '<button type="button" class="todo-edit-btn save">Save</button>';
+        editHtml += '<button type="button" class="todo-edit-btn cancel">Cancel</button>';
+        editHtml += '</div></div>';
 
         item.innerHTML = editHtml;
 
