@@ -53,15 +53,23 @@ if (empty($pathParts)) {
 }
 
 // Handle creating a new project file
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project' && $project !== null) {
-    try {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project') {
+    // Get project name from POST (for dashboard form) or from URL
+    $newProjectName = trim($_POST['project_name'] ?? '');
+    $projectToCreate = !empty($newProjectName) ? $newProjectName : $project;
+
+    if ($projectToCreate !== null && !empty($projectToCreate)) {
+        try {
             // Create empty project file
-            $todoWriter->createEmptyFile($username, $currentYear, $project);
+            $todoWriter->createEmptyFile($username, $currentYear, $projectToCreate);
             // Redirect to the newly created project
-            header("Location: /do/{$project}");
+            header("Location: /do/{$projectToCreate}");
             exit;
-    } catch (\Exception $e) {
-        $error_message = "Error creating project: " . $e->getMessage();
+        } catch (\Exception $e) {
+            $error_message = "Error creating project: " . $e->getMessage();
+        }
+    } else {
+        $error_message = "Please enter a project name.";
     }
 }
 
@@ -607,6 +615,7 @@ if ($project === null) {
         $page->set("year", $currentYear);
         $page->set("projects", $projects);
         $page->set("projectListHtml", $todoRenderer->renderProjectList($projects, $username, $currentYear));
+        $page->set("error_message", $error_message);
 
         $inner = $page->grabTheGoods();
 
