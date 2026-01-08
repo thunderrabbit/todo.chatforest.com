@@ -588,7 +588,8 @@ console.log('visibilitychange event:', document.hidden ? 'hidden' : 'visible');
 document.addEventListener('visibilitychange', function() {
     console.log('visibilitychange event:', document.hidden ? 'hidden' : 'visible');
     if (!document.hidden) {
-        // User just came back to this tab - reload to get fresh data
-        window.location.reload();
+        // User just came back to this tab - fetch fresh data with GET request
+        // Using href assignment instead of reload() to avoid POST resubmission dialog
+        window.location.href = window.location.href;
     }
 });
