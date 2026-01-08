@@ -445,10 +445,14 @@ if (todoForm) {
 
         // Update hidden inputs
         var hiddenInputs = todoItem.querySelectorAll("input[type=hidden]");
+        var updatedCount = 0;
         hiddenInputs.forEach(function(hidden) {
-            var match = hidden.name.match(/todo_data\\[(\\d+)\\]\\[(\\w+)\\]/);
-            if (match && match[1] === index && data[match[2]] !== undefined) {
-                hidden.value = data[match[2]];
+            var match = hidden.name.match(/todo_data\[(\d+)\]\[(\w+)\]/);
+            if (match) {
+                if (match[1] == index && data[match[2]] !== undefined) {
+                    hidden.value = data[match[2]];
+                    updatedCount++;
+                }
             }
         });
 
