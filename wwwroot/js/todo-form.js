@@ -581,3 +581,14 @@ if (todoForm) {
         });
     });
 }
+
+console.log('visibilitychange event:', document.hidden ? 'hidden' : 'visible');
+// Refresh page when user returns to tab (Page Visibility API)
+// This ensures todo data is always fresh when user switches back
+document.addEventListener('visibilitychange', function() {
+    console.log('visibilitychange event:', document.hidden ? 'hidden' : 'visible');
+    if (!document.hidden) {
+        // User just came back to this tab - reload to get fresh data
+        window.location.reload();
+    }
+});
