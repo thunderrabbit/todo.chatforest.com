@@ -4,3 +4,9 @@ scp_files_to_dh.sh
 classes/Config.php
 todos/
 .antigravity-login
+vendor/
+Tests/_output/*
+!Tests/_output/.gitkeep
+Tests/_envs/
+Tests/Support/_generated/*
+!Tests/Support/_generated/.gitkeep
