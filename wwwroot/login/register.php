@@ -62,8 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $role = $creating_admin_user ? "admin" : "user";
-        $stmt = $mla_database->prepare("INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)");
-        $stmt->execute([$username, $hash, $role]);
+        (new \Database\UserRepository($mla_database))->create($username, $hash, $role);
 
         echo "<p>User created!  Please <a href='/login'>log in</a> with your new credentials.</p>";
     } catch (\PDOException $e) {
