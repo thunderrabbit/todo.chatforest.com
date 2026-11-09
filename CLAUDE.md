@@ -89,7 +89,10 @@ This leverages DreamHost's consistent `/home/username/domain.com/` path structur
 ## Common Development Tasks
 
 ### Local Development
-- No build, test, or lint commands - pure PHP development
+- Pure PHP at runtime; Composer is dev-only (Codeception, phpcs, PHPStan) and `vendor/` is gitignored. Populate it with
+  `docker run --rm -e COMPOSER_HOME=/tmp/composer -v "$PWD":/app -w /app composer:2 composer install --no-interaction`
+- Checks run on the PHP 8.3 runner image (the PHP the site is served on): `~/work/rob/standards-mcp/run-unit.sh`, `run-phpcs.sh` and `run-phpstan.sh`, each given the repo path
+- `.githooks/pre-commit` runs phpcs and PHPStan on what is staged; switch it on per clone with `git config core.hooksPath .githooks`. It doesn't run the Unit suite; run that yourself
 - PHP errors displayed on screen via `prepend.php` configuration
 - Debug mode: Add `?debug=1` to any URL for additional debugging output
 - Use `print_rob($variable)` function for debugging (similar to `var_dump` but formatted)
