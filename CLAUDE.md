@@ -34,9 +34,9 @@ This is a minimalist PHP web application framework designed for DreamHost deploy
 
 ### Deployment
 
-- Uses `scp_files_to_dh.sh` for automatic file watching and deployment to DreamHost
-- Script monitors file changes and syncs to remote server via SSH/SCP
-- Target configured for user "barefoot_rob" on "drc" host
+- `./deploy_to_dh.sh` pushes the current branch and `git pull`s it on DreamHost (ssh host `todo`, user `dh_banbanana`, root `~/todo.chatforest.com`)
+- The server's project root must be a git checkout of this repo; see the script's header for the one-time switch from the old scp watcher
+- `scp_files_to_dh.sh` (gitignored) is the old inotify/scp watcher; don't run it alongside git deploys, and never while `composer install` writes `vendor/`
 
 ### Initial Setup
 
@@ -98,10 +98,7 @@ This leverages DreamHost's consistent `/home/username/domain.com/` path structur
 - Use `\PrintRob\Debug::printRob($variable)` for debugging (similar to `var_dump` but formatted)
 
 ### File Deployment
-- **Note**: `scp_files_to_dh.sh` is gitignored and must be created locally
-- Script should monitor file changes and deploy to DreamHost via SCP
-- Target format: `barefoot_rob@drc:/home/username/domain.com/`
-- Alternative: Manual file sync to DreamHost
+- Deploy with `./deploy_to_dh.sh` (see *Deployment* above). Nothing in `vendor/`, `Tests/` or the dev configs is needed on the server
 
 ### Database Operations
 - Visit `/admin/migrate_tables.php` to manually apply pending migrations
