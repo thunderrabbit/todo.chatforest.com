@@ -319,7 +319,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // Handle form submission to save todos
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo']) && isset($_POST['todo_data']) && $project !== null) {
+// Note: $_POST['todo'] may not be set if no checkboxes are checked, but we still need to save edits
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $project !== null) {
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
