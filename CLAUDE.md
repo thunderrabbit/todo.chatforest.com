@@ -63,7 +63,7 @@ This is a minimalist PHP web application framework designed for DreamHost deploy
 
 - No package manager (composer/npm) - pure PHP with custom autoloader
 - Debug mode available via `?debug=1` URL parameter
-- Uses `print_rob()` function for debugging output
+- Uses `\PrintRob\Debug::printRob()` for debugging output
 - Error display enabled in `prepend.php` for development
 - Templates use `.tpl.php` extension and PHP template syntax
 
@@ -95,7 +95,7 @@ This leverages DreamHost's consistent `/home/username/domain.com/` path structur
 - `.githooks/pre-commit` runs phpcs and PHPStan on what is staged; switch it on per clone with `git config core.hooksPath .githooks`. It doesn't run the Unit suite; run that yourself
 - PHP errors displayed on screen via `prepend.php` configuration
 - Debug mode: Add `?debug=1` to any URL for additional debugging output
-- Use `print_rob($variable)` function for debugging (similar to `var_dump` but formatted)
+- Use `\PrintRob\Debug::printRob($variable)` for debugging (similar to `var_dump` but formatted)
 
 ### File Deployment
 - **Note**: `scp_files_to_dh.sh` is gitignored and must be created locally
