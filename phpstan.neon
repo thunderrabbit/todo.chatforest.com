@@ -1,0 +1,21 @@
+# Static analysis, run in Docker by ~/work/rob/standards-mcp/run-phpstan.sh.
+parameters:
+    level: 0
+    # The PHP todo.chatforest.com is served on. Analyse as 8.3.
+    phpVersion: 80300
+    paths:
+        - classes
+        - wwwroot
+        - prepend.php
+        - Tests
+    excludePaths:
+        analyseAndScan:
+            # Per-site and gitignored; ConfigSample declares the same class.
+            - classes/Config.php (?)
+            # Codeception output, and the actor built from generated traits
+            # that a fresh clone doesn't have.
+            - Tests/_output/*
+            - Tests/Support/*
+    bootstrapFiles:
+        - vendor/autoload.php
+        - Tests/Unit/_bootstrap.php

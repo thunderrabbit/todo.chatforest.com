@@ -16,20 +16,6 @@ spl_autoload_register(array($autoloader, 'load'));
 $mla_request = new \Mlaphp\Request();
 
 
-function print_rob($object, $exit = true)
-{
-    echo "<pre>";
-    if (is_object($object) && method_exists($object, "toArray")) {
-        echo "ResultSet => " . print_r($object->toArray(), true);
-    } else {
-        print_r($object);
-    }
-    echo "</pre>";
-    if ($exit) {
-        exit;
-    }
-}
-
 /**
  * Log debug output to a file in za_rob_logs/yyyy_mm_dd_$suffix.log
  * Similar to print_rob but writes to a log file instead of echoing to screen

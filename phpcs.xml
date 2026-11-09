@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<ruleset name="todo.chatforest.com">
+    <description>
+        Style gate: PSR-12 over classes/, wwwroot/, prepend.php and Tests/,
+        enforced on every commit by .githooks/pre-commit. Fix with phpcbf
+        where it can. (templates/*.tpl.php are mixed HTML/PHP and out of
+        scope.) The sniffs excluded inside the PSR12 rule are what the code
+        broke when the gate arrived: a backlog, cleared as its own step. The
+        two narrow exclusions after it are deliberate.
+    </description>
+
+    <file>classes</file>
+    <file>wwwroot</file>
+    <file>prepend.php</file>
+    <file>Tests</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/Tests/_output/*</exclude-pattern>
+    <exclude-pattern>*/Tests/Support/_generated/*</exclude-pattern>
+
+    <rule ref="PSR12">
+        <!-- Backlog: what the code broke when the gate arrived (2026-11-09). -->
+        <exclude name="Generic.ControlStructures.InlineControlStructure.NotAllowed"/>
+        <exclude name="Generic.Files.LineLength.TooLong"/>
+        <exclude name="Generic.WhiteSpace.DisallowTabIndent.NonIndentTabsUsed"/>
+        <exclude name="Generic.WhiteSpace.ScopeIndent.IncorrectExact"/>
+        <exclude name="PSR1.Classes.ClassDeclaration.MissingNamespace"/>
+        <exclude name="PSR1.Classes.ClassDeclaration.MultipleClasses"/>
+        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
+        <exclude name="PSR12.Classes.ClassInstantiation.MissingParentheses"/>
+        <exclude name="PSR12.Classes.ClosingBrace.StatementAfter"/>
+        <exclude name="PSR12.Classes.OpeningBraceSpace.Found"/>
+        <exclude name="PSR12.Files.FileHeader.SpacingAfterDocblockBlock"/>
+        <exclude name="PSR12.Files.FileHeader.SpacingAfterNamespaceBlock"/>
+        <exclude name="PSR12.Files.FileHeader.SpacingAfterTagBlock"/>
+        <exclude name="PSR12.Functions.ReturnTypeDeclaration.SpaceBeforeColon"/>
+        <exclude name="PSR12.Functions.ReturnTypeDeclaration.SpaceBeforeReturnType"/>
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceAfter"/>
+        <exclude name="PSR12.Operators.OperatorSpacing.NoSpaceBefore"/>
+        <exclude name="PSR2.Classes.ClassDeclaration.CloseBraceAfterBody"/>
+        <exclude name="PSR2.Classes.ClassDeclaration.OpenBraceNewLine"/>
+        <exclude name="PSR2.Files.EndFileNewline.TooMany"/>
+        <exclude name="Squiz.ControlStructures.ControlSignature.SpaceAfterCloseBrace"/>
+        <exclude name="Squiz.ControlStructures.ControlSignature.SpaceAfterCloseParenthesis"/>
+        <exclude name="Squiz.ControlStructures.ControlSignature.SpaceAfterKeyword"/>
+        <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.BraceOnSameLine"/>
+        <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.ContentAfterBrace"/>
+        <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.NewlineBeforeOpenBrace"/>
+        <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceAfterFunction"/>
+        <exclude name="Squiz.Functions.MultiLineFunctionDeclaration.SpaceBeforeOpenBrace"/>
+        <exclude name="Squiz.WhiteSpace.ControlStructureSpacing.SpacingAfterOpen"/>
+        <exclude name="Squiz.WhiteSpace.ControlStructureSpacing.SpacingBeforeClose"/>
+        <exclude name="Squiz.WhiteSpace.ScopeClosingBrace.ContentBefore"/>
+        <exclude name="Squiz.WhiteSpace.ScopeClosingBrace.Indent"/>
+    </rule>
+
+    <!-- prepend.php is the bootstrap every page includes: it runs the request
+         setup and also declares the few global helpers templates call
+         (csrf_field(), csrf_token(), print_rob()). Every other file stays
+         either declarations or logic. -->
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>*/prepend.php</exclude-pattern>
+    </rule>
+
+    <!-- Codeception calls _before() and _after() by those exact names. -->
+    <rule ref="PSR2.Methods.MethodDeclaration.Underscore">
+        <exclude-pattern>*/Tests/*</exclude-pattern>
+    </rule>
+</ruleset>
