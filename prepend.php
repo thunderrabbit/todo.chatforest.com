@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Take request values as strings";
+const SENTIMENTAL_VERSION = "The top rung";
 
 # write errors to screen
 ini_set('display_errors', 1);
