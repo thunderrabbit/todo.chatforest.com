@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Rector type declarations";
+const SENTIMENTAL_VERSION = "Admin chip for pending migrations";
 
 # write errors to screen
 ini_set('display_errors', 1);
