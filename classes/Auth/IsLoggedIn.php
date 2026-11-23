@@ -24,7 +24,7 @@ class IsLoggedIn
         if(!empty($mla_request->cookie[$this->di_config->cookie_name]))
         {
             $found_user_id = $this->getUserIdForCookieInDatabase(
-                cookie: $mla_request->cookie[$this->di_config->cookie_name],
+                cookie: \Utilities::stringOr($mla_request->cookie[$this->di_config->cookie_name]),
                 ip_address: \Utilities::stringOr($_SERVER['REMOTE_ADDR'] ?? null),
                 user_agent: \Utilities::stringOr($_SERVER['HTTP_USER_AGENT'] ?? null)
             );
@@ -39,7 +39,7 @@ class IsLoggedIn
             // Note: We can't access $csrfProtect from prepend.php here due to architectural constraints
             // For now, we'll accept the login attempt without CSRF check as IsLoggedIn is low-level auth
             // CSRF protection is better enforced at form submission points
-            $found_user_id = $this->checkPHPHashedPassword($mla_request->post['username'], $mla_request->post['pass']);
+            $found_user_id = $this->checkPHPHashedPassword(\Utilities::stringOr($mla_request->post['username']), \Utilities::stringOr($mla_request->post['pass']));
             if(empty($found_user_id))
             {
                 $this->killCookie();        // bad login, so kill any cookie
