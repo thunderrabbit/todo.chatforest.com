@@ -72,7 +72,7 @@ class RecurringCalculator
      * Calculate next weekly occurrence (next matching weekday)
      *
      * @param \DateTime $completionDateTime Completion date/time
-     * @param array $targetDays Array of day numbers (0=Sunday, 6=Saturday)
+     * @param array<int, int> $targetDays Day numbers (0=Sunday, 6=Saturday)
      * @param string $timeComponent Time in HH:MM:SS format
      * @return string Next occurrence in "HH:MM:SS DD-mon-YYYY" format
      */
@@ -100,7 +100,7 @@ class RecurringCalculator
      * Calculate next monthly occurrence (next matching day of month)
      *
      * @param \DateTime $completionDateTime Completion date/time
-     * @param array $targetDays Array of day numbers (1-31)
+     * @param array<int, int> $targetDays Day numbers (1-31)
      * @param string $timeComponent Time in HH:MM:SS format
      * @return string Next occurrence in "HH:MM:SS DD-mon-YYYY" format
      */
@@ -143,7 +143,7 @@ class RecurringCalculator
      * #w:mon,tue,fri -> [1, 2, 5] (Monday=1, Tuesday=2, Friday=5)
      *
      * @param string $marker The weekly marker
-     * @return array Array of day numbers (0=Sunday, 6=Saturday)
+     * @return array<int, int> Day numbers (0=Sunday, 6=Saturday)
      */
     private function parseWeeklyDays(string $marker): array
     {
@@ -175,7 +175,7 @@ class RecurringCalculator
      * #m:1,11,21 -> [1, 11, 21]
      *
      * @param string $marker The monthly marker
-     * @return array Array of day numbers (1-31)
+     * @return array<int, int> Day numbers (1-31)
      */
     private function parseMonthlyDays(string $marker): array
     {
