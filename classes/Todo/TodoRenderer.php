@@ -10,11 +10,6 @@ namespace Todo;
  */
 class TodoRenderer
 {
-    public function __construct(
-        private \Config $config,
-    ) {
-    }
-
     /**
      * Render todos as HTML
      *

@@ -53,12 +53,7 @@ function log_rob(mixed $object, string $suffix = "logged"): void
     file_put_contents($logFile, $logContent, FILE_APPEND | LOCK_EX);
 }
 
-try {
-    $config = new \Config();
-} catch (\Exception $e) {
-    echo "Couldn't create Config cause " . $e->getMessage();
-    exit;
-}
+$config = new \Config();
 
 $mla_database = \Database\Base::getPDO($config);
 // Check if the database exists and is accessible

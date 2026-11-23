@@ -28,7 +28,7 @@ $success_message = '';
 // Use TodoReader and TodoWriter
 $todoReader = new \Todo\TodoReader($config);
 $todoWriter = new \Todo\TodoWriter($config);
-$todoRenderer = new \Todo\TodoRenderer($config);
+$todoRenderer = new \Todo\TodoRenderer();
 $recurringCalculator = new \Todo\RecurringCalculator();
 
 // Parse URL first to get project info
@@ -341,6 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
         }
 
         // Update todo completion status based on form submission
+        /** @var list<array<string, mixed>> $todos Form items, then generated recurring ones */
         $todos = [];
         $checked = $_POST['todo'] ?? [];
         $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
