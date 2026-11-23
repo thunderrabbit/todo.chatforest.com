@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Name the globals";
+const SENTIMENTAL_VERSION = "Trust the docblocks";
 
 # write errors to screen
 ini_set('display_errors', 1);
