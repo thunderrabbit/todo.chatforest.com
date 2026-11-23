@@ -522,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 }
 
                 // Sort hidden todos by original index to maintain their relative order
-                usort($hiddenTodos, function($a, $b): int {
+                usort($hiddenTodos, function(array $a, array $b): int {
                     $indexA = $a['originalIndex'];
                     $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
@@ -556,7 +556,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 }
 
                 // Sort by originalIndex to maintain original file order
-                usort($updatedTodos, function($a, $b): int {
+                usort($updatedTodos, function(array $a, array $b): int {
                     $indexA = $a['originalIndex'];
                     $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
