@@ -153,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Moved']);
+            echo json_encode(['success' => true, 'message' => $success_message ?: 'Moved']);
         }
         exit;
     }
@@ -211,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Deleted']);
+            echo json_encode(['success' => true, 'message' => $success_message ?: 'Deleted']);
         }
         exit;
     }
@@ -603,7 +603,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => $error_message]);
         } else {
-            echo json_encode(['success' => true, 'message' => $success_message ?? 'Saved']);
+            echo json_encode(['success' => true, 'message' => $success_message ?: 'Saved']);
         }
         exit;
     }
