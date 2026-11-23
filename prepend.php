@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Declare the missing types";
+const SENTIMENTAL_VERSION = "Check for false";
 
 # write errors to screen
 ini_set('display_errors', 1);
