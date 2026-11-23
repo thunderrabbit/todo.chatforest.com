@@ -101,7 +101,7 @@ class TodoSorter
                 return $matches[1] . '-' . ucfirst(strtolower($matches[2])) . '-' . $matches[3];
             },
             $dateOnly
-        );
+        ) ?? $dateOnly;
 
         // Parse the date (DD-MMM-YYYY format)
         // Create a DateTime object
