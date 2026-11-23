@@ -9,14 +9,16 @@ namespace Todo;
  * 1. Unfinished link-items sorted by name (alphabetically, case-insensitive)
  * 2. Finished items sorted by finished time (chronologically)
  * 3. Unfinished non-link items sorted by start time (chronologically)
+ *
+ * @phpstan-import-type Todo from TodoReader
  */
 class TodoSorter
 {
     /**
      * Sort todos according to the preferred order
      *
-     * @param array<int, array<string, mixed>> $todos Todo items (as returned by TodoReader::parseTodos)
-     * @return list<array<string, mixed>> Sorted todo items
+     * @param array<int, Todo> $todos Todo items (as returned by TodoReader::parseTodos)
+     * @return list<Todo> Sorted todo items
      */
     public static function sortTodos(array $todos): array
     {
@@ -26,8 +28,8 @@ class TodoSorter
         $group3 = []; // Unfinished non-link items
 
         foreach ($todos as $todo) {
-            $isComplete = $todo['isComplete'] ?? false;
-            $hasLink = $todo['hasLink'] ?? false;
+            $isComplete = $todo['isComplete'];
+            $hasLink = $todo['hasLink'];
 
             if (!$isComplete && $hasLink) {
                 // Group 1: Unfinished link-items
@@ -43,8 +45,8 @@ class TodoSorter
 
         // Sort Group 1: Unfinished link-items by name (case-insensitive)
         usort($group1, function($a, $b) {
-            $nameA = strtolower($a['linkText'] ?? '');
-            $nameB = strtolower($b['linkText'] ?? '');
+            $nameA = strtolower($a['linkText']);
+            $nameB = strtolower($b['linkText']);
             return strcmp($nameA, $nameB);
         });
 
