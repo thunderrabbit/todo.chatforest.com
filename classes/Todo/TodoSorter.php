@@ -44,21 +44,21 @@ class TodoSorter
         }
 
         // Sort Group 1: Unfinished link-items by name (case-insensitive)
-        usort($group1, function($a, $b) {
+        usort($group1, function(array $a, array $b): int {
             $nameA = strtolower($a['linkText']);
             $nameB = strtolower($b['linkText']);
             return strcmp($nameA, $nameB);
         });
 
         // Sort Group 2: Finished items by finished time (chronologically)
-        usort($group2, function($a, $b) {
+        usort($group2, function(array $a, array $b): int {
             $timeA = self::parseDateTime($a['completeDate'] ?? '');
             $timeB = self::parseDateTime($b['completeDate'] ?? '');
             return $timeA <=> $timeB;
         });
 
         // Sort Group 3: Unfinished items by start time (chronologically)
-        usort($group3, function($a, $b) {
+        usort($group3, function(array $a, array $b): int {
             $timeA = self::parseDateTime($a['createDate'] ?? '');
             $timeB = self::parseDateTime($b['createDate'] ?? '');
             return $timeA <=> $timeB;
@@ -99,7 +99,7 @@ class TodoSorter
         // Handle both "03-Nov-2025" and "03-nov-2025"
         $datePart = preg_replace_callback(
             '/(\d{2})-([a-z]{3})-(\d{4})/i',
-            fn($matches) => $matches[1] . '-' . ucfirst(strtolower($matches[2])) . '-' . $matches[3],
+            fn($matches): string => $matches[1] . '-' . ucfirst(strtolower($matches[2])) . '-' . $matches[3],
             $dateOnly
         ) ?? $dateOnly;
 

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 $projectRoot = dirname(__DIR__, 2);
 
-spl_autoload_register(function ($class) use ($projectRoot) {
+spl_autoload_register(function ($class) use ($projectRoot): void {
     $class = ltrim($class, '\\');
     $path = str_replace(['\\', '_'], DIRECTORY_SEPARATOR, $class);
     $file = $projectRoot . '/classes/' . $path . '.php';

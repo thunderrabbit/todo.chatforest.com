@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\LevelSetList;
+use Rector\Set\ValueObject\SetList;
 
 // Same paths as phpcs.xml (templates/*.tpl.php are mixed HTML/PHP and out of scope).
 return RectorConfig::configure()
@@ -18,4 +19,4 @@ return RectorConfig::configure()
         __DIR__ . '/Tests/_output',
         __DIR__ . '/Tests/Support/_generated',
     ])
-    ->withSets([LevelSetList::UP_TO_PHP_83]);
+    ->withSets([LevelSetList::UP_TO_PHP_83, SetList::TYPE_DECLARATION]);
