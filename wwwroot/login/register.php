@@ -29,9 +29,9 @@ $creating_admin_user = !$dbExistaroo->firstUserExistBool();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // handle form submission...
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['pass'] ?? '';
-    $password_confirm = $_POST['pass_verify'] ?? '';
+    $username = trim(\Utilities::stringOr($_POST['username'] ?? null));
+    $password = \Utilities::stringOr($_POST['pass'] ?? null);
+    $password_confirm = \Utilities::stringOr($_POST['pass_verify'] ?? null);
 
     // Validate input
     $errors = [];

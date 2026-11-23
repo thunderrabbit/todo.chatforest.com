@@ -21,7 +21,7 @@ $username = $is_logged_in->getLoggedInUsername();
 $currentYear = (int) date('Y'); // Default to current year
 
 // Parse the URL to determine what we're showing
-$uri_path = $_SERVER['REQUEST_URI'] ?? '';
+$uri_path = \Utilities::stringOr($_SERVER['REQUEST_URI'] ?? null);
 $error_message = '';
 $success_message = '';
 
@@ -60,7 +60,7 @@ if (empty($pathParts)) {
 // Handle creating a new project file
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project') {
     // Get project name from POST (for dashboard form) or from URL
-    $newProjectName = trim($_POST['project_name'] ?? '');
+    $newProjectName = trim(\Utilities::stringOr($_POST['project_name'] ?? null));
     $projectToCreate = !empty($newProjectName) ? $newProjectName : $project;
 
     if ($projectToCreate !== null && !empty($projectToCreate)) {
@@ -83,20 +83,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    $targetFile = $_POST['target_file'] ?? '';
+    $targetFile = \Utilities::stringOr($_POST['target_file'] ?? null);
 
         if (empty($targetFile)) {
             $error_message = "Target file not specified.";
         } else {
             try {
                 // Get the todo data from POST
-                $todoDescription = $_POST['todo_description'] ?? '';
-                $todoCreateDate = $_POST['todo_createDate'] ?? '';
-                $todoCompleteDate = $_POST['todo_completeDate'] ?? '';
+                $todoDescription = \Utilities::stringOr($_POST['todo_description'] ?? null);
+                $todoCreateDate = \Utilities::stringOr($_POST['todo_createDate'] ?? null);
+                $todoCompleteDate = \Utilities::stringOr($_POST['todo_completeDate'] ?? null);
                 $todoIsComplete = !empty($_POST['todo_isComplete']);
                 $todoHasLink = !empty($_POST['todo_hasLink']);
-                $todoLinkText = $_POST['todo_linkText'] ?? '';
-                $todoLinkFile = $_POST['todo_linkFile'] ?? '';
+                $todoLinkText = \Utilities::stringOr($_POST['todo_linkText'] ?? null);
+                $todoLinkFile = \Utilities::stringOr($_POST['todo_linkFile'] ?? null);
 
                 // First, remove from current list
                 $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
@@ -164,8 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    $originalCreateDate = $_POST['todo_originalCreateDate'] ?? '';
-        $originalDescription = $_POST['todo_originalDescription'] ?? '';
+    $originalCreateDate = \Utilities::stringOr($_POST['todo_originalCreateDate'] ?? null);
+        $originalDescription = \Utilities::stringOr($_POST['todo_originalDescription'] ?? null);
 
         if (empty($originalCreateDate) && empty($originalDescription)) {
             $error_message = "Todo item not specified.";
@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
-    $newTodoText = trim($_POST['new_todo'] ?? '');
+    $newTodoText = trim(\Utilities::stringOr($_POST['new_todo'] ?? null));
 
         if (!empty($newTodoText)) {
             try {
@@ -260,8 +260,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $description = str_replace('LINK_PLACEHOLDER', '[[' . $linkText . ']]', $description);
                 } else {
                     // Use current client datetime
-                    $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
-                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                    $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? null, 'UTC');
+                    $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
 
                     // Convert client datetime to our format: HH:MM:SS DD-Mon-YYYY
                     try {
@@ -342,8 +342,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
         // Update todo completion status based on form submission
         $todos = [];
-        $checked = $_POST['todo'] ?? [];
-        $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+        $checked = is_array($_POST['todo'] ?? null) ? $_POST['todo'] : [];
+        $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? null, 'UTC');
 
         // Track which todos were just completed (for recurring logic)
         $newlyCompletedTodos = [];
@@ -384,7 +384,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Update completion date if just completed
             if ($todo['isComplete'] && empty($todoData['completeDate'])) {
                 // Use current timestamp for completion
-                $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
 
                 try {
                     $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
@@ -400,7 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             if ($todo['isComplete'] && $wasIncomplete && !empty($todo['recurringMarker'])) {
                 // Ensure completeDate is set (use the one from form or set it now)
                 if (empty($todo['completeDate'])) {
-                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                    $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
                     try {
                         $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                         $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
@@ -653,7 +653,7 @@ try {
 
     // Get client timezone (from POST if available, otherwise default to UTC)
     // JavaScript will update this on form interactions
-    $clientTimezone = $_POST['client_timezone'] ?? $_GET['timezone'] ?? 'UTC';
+    $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? $_GET['timezone'] ?? null, 'UTC');
     if (empty($clientTimezone) || !in_array($clientTimezone, timezone_identifiers_list())) {
         $clientTimezone = 'UTC';
     }
@@ -668,7 +668,7 @@ try {
     $page->set("error_message", $error_message);
     $page->set("success_message", $success_message);
     $page->set("todosHtml", $todoRenderer->renderTodos($todos, $username, $currentYear, $clientTimezone));
-    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $username, $currentYear, $clientTimezone));
+    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $uri_path, $username, $currentYear, $clientTimezone));
 
     $inner = $page->grabTheGoods();
 
