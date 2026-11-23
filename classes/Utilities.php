@@ -58,4 +58,13 @@ class Utilities {
 
         return $realTarget;
     }
+
+    /**
+     * A request value as a string. Form fields arrive as strings; anything
+     * else (missing, an array, null) becomes $default.
+     */
+    public static function stringOr(mixed $value, string $default = ''): string
+    {
+        return is_string($value) ? $value : $default;
+    }
 }
