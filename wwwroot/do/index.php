@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $found = false;
                 foreach ($currentTodos as $todo) {
                     $todoCreateDate = $todo['createDate'] ?? '';
-                    $todoDescription = $todo['description'] ?? '';
+                    $todoDescription = $todo['description'];
 
                     // Match using original values (same logic as save)
                     if ($todoCreateDate === $originalCreateDate && $todoDescription === $originalDescription) {
@@ -336,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
         // Build a map of original todos by key for quick lookup
         $originalTodosMap = [];
         foreach ($originalTodos as $originalTodo) {
-            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
             $originalTodosMap[$key] = $originalTodo;
         }
 
@@ -375,7 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $wasIncomplete = true;
             if (isset($originalTodosMap[$originalKey])) {
                 $originalTodo = $originalTodosMap[$originalKey];
-                $wasIncomplete = !($originalTodo['isComplete'] ?? false);
+                $wasIncomplete = !$originalTodo['isComplete'];
             }
 
             // Update completion date if just completed
@@ -462,7 +462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Build a map of original todos by key for quick lookup
             $originalTodosMap = [];
             foreach ($fullTodos as $originalTodo) {
-                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                 $originalTodosMap[$key] = $originalTodo;
             }
 
@@ -512,7 +512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // This preserves hidden items' relative positions
                 $hiddenTodos = [];
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                     if (!isset($processedKeys[$key])) {
                         $hiddenTodos[] = $originalTodo;
                     }
@@ -520,8 +520,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
                 // Sort hidden todos by original index to maintain their relative order
                 usort($hiddenTodos, function($a, $b) {
-                    $indexA = $a['originalIndex'] ?? 999999;
-                    $indexB = $b['originalIndex'] ?? 999999;
+                    $indexA = $a['originalIndex'];
+                    $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
                 });
 
@@ -533,7 +533,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // Items were NOT dragged - preserve original order exactly
                 // Process original todos in their original order
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
 
                     if (isset($formTodosMap[$key])) {
                         // This item was in the form - update it with form data (including any edits)
