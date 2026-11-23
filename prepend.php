@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Dead code goes";
+const SENTIMENTAL_VERSION = "Mind the arguments";
 
 # write errors to screen
 ini_set('display_errors', 1);
