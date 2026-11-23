@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Catch the null from preg";
+const SENTIMENTAL_VERSION = "Trust nothing mixed";
 
 # write errors to screen
 ini_set('display_errors', 1);
