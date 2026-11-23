@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Handle what can return false";
+const SENTIMENTAL_VERSION = "Expect null";
 
 # write errors to screen
 ini_set('display_errors', 1);
