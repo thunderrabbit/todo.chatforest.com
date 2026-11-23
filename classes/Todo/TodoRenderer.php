@@ -154,7 +154,6 @@ class TodoRenderer
      *
      * @param array $todos Array of todo items
      * @param string $actionUrl The form action URL
-     * @param string $csrfToken The CSRF token
      * @param string $username The username
      * @param int $year The year (YYYY)
      * @param string $clientTimezone Client timezone (e.g., "America/New_York")
