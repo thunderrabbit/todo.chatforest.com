@@ -72,7 +72,7 @@ class TodoWriter
     private function sanitizeProjectName(string $project): string
     {
         // Allow alphanumeric, underscores, hyphens only
-        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $project);
+        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $project) ?? '';
         // Remove leading/trailing underscores
         $sanitized = trim($sanitized, '_');
         // Ensure it's not empty
