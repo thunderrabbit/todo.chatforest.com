@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "The top rung";
+const SENTIMENTAL_VERSION = "Check the database rows";
 
 # write errors to screen
 ini_set('display_errors', 1);
