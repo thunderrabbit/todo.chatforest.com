@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Trust the docblocks";
+const SENTIMENTAL_VERSION = "Dead code goes";
 
 # write errors to screen
 ini_set('display_errors', 1);
