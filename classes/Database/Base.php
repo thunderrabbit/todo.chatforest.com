@@ -4,10 +4,10 @@ namespace Database;
 const CONFIG_DATABASE_OUTPUT_ENCODING = "utf8mb4";
 
 class Base{
-    private static $pdo;
+    private static ?\PDO $pdo = null;
 
     // Modern database access using native PDO interface
-    private static function initDB(\Config $config){
+    private static function initDB(\Config $config): void {
         /** START - Database **/
         if(empty(self::$pdo)){
             $dsn = "mysql:host={$config->dbHost}";
