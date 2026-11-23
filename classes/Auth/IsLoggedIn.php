@@ -25,8 +25,8 @@ class IsLoggedIn
         {
             $found_user_id = $this->getUserIdForCookieInDatabase(
                 cookie: $mla_request->cookie[$this->di_config->cookie_name],
-                ip_address: $_SERVER['REMOTE_ADDR'] ?? '',
-                user_agent: $_SERVER['HTTP_USER_AGENT'] ?? ''
+                ip_address: \Utilities::stringOr($_SERVER['REMOTE_ADDR'] ?? null),
+                user_agent: \Utilities::stringOr($_SERVER['HTTP_USER_AGENT'] ?? null)
             );
             if(empty($found_user_id))
             {
@@ -101,8 +101,8 @@ class IsLoggedIn
             'user_id' => $user_id,
             'cookie' => $cookie,
             'last_access' => date(format: "Y-m-d H:i:s"),
-            'user_agent_md5' => md5($_SERVER['HTTP_USER_AGENT'] ?? ''),
-            'ip_address' => \Auth\IPBin::ipToBinary(ip: $_SERVER['REMOTE_ADDR'])
+            'user_agent_md5' => md5(\Utilities::stringOr($_SERVER['HTTP_USER_AGENT'] ?? null)),
+            'ip_address' => \Auth\IPBin::ipToBinary(ip: \Utilities::stringOr($_SERVER['REMOTE_ADDR'] ?? null))
         ];
 
         // Insert using native PDO
