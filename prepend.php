@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Check the database rows";
+const SENTIMENTAL_VERSION = "Rector for PHP 8.3";
 
 # write errors to screen
 ini_set('display_errors', 1);
