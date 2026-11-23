@@ -12,8 +12,8 @@ use Codeception\Test\Unit;
  */
 class RecurringCalculatorTest extends Unit
 {
-    private const COMPLETED = '10:00:00 09-nov-2026';
-    private const CREATED = '08:30:00 01-nov-2026';
+    private const string COMPLETED = '10:00:00 09-nov-2026';
+    private const string CREATED = '08:30:00 01-nov-2026';
 
     private \Todo\RecurringCalculator $calc;
 
