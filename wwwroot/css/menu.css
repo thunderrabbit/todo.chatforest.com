@@ -36,3 +36,15 @@
 .NavBar .dropdown:hover .dropdown-menu {
     display: block;
 }
+
+.NavBar .AdminCount {
+    display: inline-block;
+    min-width: 1.4em;
+    padding: 0 0.4em;
+    border-radius: 999px;
+    background: #0366a8;
+    color: #ffffff;
+    font-size: 0.8em;
+    line-height: 1.4;
+    text-align: center;
+}

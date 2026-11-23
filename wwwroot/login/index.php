@@ -8,6 +8,7 @@ include_once $matches[1] . '/prepend.php';
 /**
  * @var \Auth\IsLoggedIn $is_logged_in
  * @var \Config $config
+ * @var int $admin_count
  */
 
 if ($is_logged_in->isLoggedIn()) {
@@ -15,7 +16,7 @@ if ($is_logged_in->isLoggedIn()) {
     header(header: "Location: /");
     exit;
 } else {
-    $page = new \Template(config: $config);
+    $page = new \Template(config: $config, admin_count: $admin_count);
     $page->setTemplate("login/index.tpl.php");
     $page->echoToScreen();
     exit;

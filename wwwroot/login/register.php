@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 
 } else {
-    $page = new \Template(config: $config);
+    $page = new \Template(config: $config, admin_count: 0);
     $page->setTemplate("login/register.tpl.php");
     $page->echoToScreen();
     exit;
