@@ -16,12 +16,7 @@ session_start();
 
 $mla_request = new \Mlaphp\Request();
 
-try {
-    $config = new \Config();
-} catch (\Exception $e) {
-    echo "Couldn't create Config cause " . $e->getMessage();
-    exit;
-}
+$config = new \Config();
 
 $mla_database = \Database\Base::getPDO($config);
 // Check if the database exists and is accessible
