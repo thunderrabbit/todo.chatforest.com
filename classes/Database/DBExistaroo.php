@@ -4,7 +4,8 @@ namespace Database;
 
 class DBExistaroo {
 
-    private $automaticSchemaPrefixes = [
+    /** @var list<string> */
+    private array $automaticSchemaPrefixes = [
         "00",
         "01",
     ];
@@ -24,6 +25,7 @@ class DBExistaroo {
     ){
     }
 
+    /** @return list<string> */
     public function checkaroo(): array {
         $errors = [];
 
@@ -155,6 +157,7 @@ class DBExistaroo {
         return $this->hasAnyUsers();
     }
 
+    /** @return list<string> */
     public function getPendingMigrations(): array {
         $pending = [];
         $applied = $this->getAppliedVersions();
@@ -183,6 +186,7 @@ class DBExistaroo {
         return $pending;
     }
 
+    /** @return list<string> */
     private function getAppliedVersions(): array {
         $versions = [];
         $stmt = $this->pdo->prepare("SELECT applied_version FROM applied_DB_versions");

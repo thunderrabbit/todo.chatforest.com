@@ -15,8 +15,8 @@ class TodoSorter
     /**
      * Sort todos according to the preferred order
      *
-     * @param array $todos Array of todo items (as returned by TodoReader::parseTodos)
-     * @return array Sorted array of todo items
+     * @param array<int, array<string, mixed>> $todos Todo items (as returned by TodoReader::parseTodos)
+     * @return list<array<string, mixed>> Sorted todo items
      */
     public static function sortTodos(array $todos): array
     {

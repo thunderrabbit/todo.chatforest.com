@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Say what it takes";
+const SENTIMENTAL_VERSION = "Declare the missing types";
 
 # write errors to screen
 ini_set('display_errors', 1);
