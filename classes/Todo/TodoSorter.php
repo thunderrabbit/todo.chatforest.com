@@ -44,21 +44,21 @@ class TodoSorter
         }
 
         // Sort Group 1: Unfinished link-items by name (case-insensitive)
-        usort($group1, function($a, $b) {
+        usort($group1, function($a, $b): int {
             $nameA = strtolower($a['linkText']);
             $nameB = strtolower($b['linkText']);
             return strcmp($nameA, $nameB);
         });
 
         // Sort Group 2: Finished items by finished time (chronologically)
-        usort($group2, function($a, $b) {
+        usort($group2, function($a, $b): int {
             $timeA = self::parseDateTime($a['completeDate'] ?? '');
             $timeB = self::parseDateTime($b['completeDate'] ?? '');
             return $timeA <=> $timeB;
         });
 
         // Sort Group 3: Unfinished items by start time (chronologically)
-        usort($group3, function($a, $b) {
+        usort($group3, function($a, $b): int {
             $timeA = self::parseDateTime($a['createDate'] ?? '');
             $timeB = self::parseDateTime($b['createDate'] ?? '');
             return $timeA <=> $timeB;

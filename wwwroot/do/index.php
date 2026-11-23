@@ -482,7 +482,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 }
             }
             // Sort originalOrder by originalIndex to get true original order
-            usort($originalOrder, function($keyA, $keyB) use ($originalTodosMap) {
+            usort($originalOrder, function($keyA, $keyB) use ($originalTodosMap): int {
                 $indexA = $originalTodosMap[$keyA]['originalIndex'] ?? 999999;
                 $indexB = $originalTodosMap[$keyB]['originalIndex'] ?? 999999;
                 return $indexA <=> $indexB;
@@ -522,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 }
 
                 // Sort hidden todos by original index to maintain their relative order
-                usort($hiddenTodos, function($a, $b) {
+                usort($hiddenTodos, function($a, $b): int {
                     $indexA = $a['originalIndex'];
                     $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
@@ -556,7 +556,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 }
 
                 // Sort by originalIndex to maintain original file order
-                usort($updatedTodos, function($a, $b) {
+                usort($updatedTodos, function($a, $b): int {
                     $indexA = $a['originalIndex'];
                     $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
