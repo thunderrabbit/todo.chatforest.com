@@ -253,7 +253,7 @@ class RecurringCalculator
 
         try {
             $timezoneObj = new \DateTimeZone($timezone);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $timezoneObj = new \DateTimeZone('UTC');
         }
 
@@ -272,7 +272,7 @@ class RecurringCalculator
                 $phpDateStr = "$year-$monNum-$day $timePart";
                 try {
                     return new \DateTime($phpDateStr, $timezoneObj);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     return null;
                 }
             }
@@ -289,7 +289,7 @@ class RecurringCalculator
                     $phpDateStr = "$year-$monNum-$day 12:00:00";
                     try {
                         return new \DateTime($phpDateStr, $timezoneObj);
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         return null;
                     }
                 }

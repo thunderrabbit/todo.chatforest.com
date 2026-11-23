@@ -130,7 +130,7 @@ class TodoSorter
                     return $dt->getTimestamp();
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // If parsing fails, return 0
         }
 
