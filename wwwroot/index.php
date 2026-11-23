@@ -22,6 +22,7 @@ if($is_logged_in->isLoggedIn()){
     $inner_page = new \Template(config: $config);
     $inner_page->setTemplate("index.tpl.php");
     $inner_page->set("username", $is_logged_in->getLoggedInUsername());
+    $inner_page->set("is_admin", $is_logged_in->isAdmin());
     $inner_page->set("site_version", SENTIMENTAL_VERSION);
     $page->set("page_content", $inner_page->grabTheGoods());
 
