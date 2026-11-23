@@ -3,7 +3,7 @@ namespace Database;
 
 class PasswordRepository
 {
-    private $pdo;
+    private \PDO $pdo;
 
     public function __construct(\PDO $pdo)
     {
