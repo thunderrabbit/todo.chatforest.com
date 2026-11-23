@@ -22,9 +22,9 @@ $success_message = '';
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $current_password = $_POST['current_password'] ?? '';
-    $new_password = $_POST['new_password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
+    $current_password = \Utilities::stringOr($_POST['current_password'] ?? null);
+    $new_password = \Utilities::stringOr($_POST['new_password'] ?? null);
+    $confirm_password = \Utilities::stringOr($_POST['confirm_password'] ?? null);
 
     // Validate input
     $errors = [];
