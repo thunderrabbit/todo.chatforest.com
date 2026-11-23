@@ -197,7 +197,10 @@ class DBExistaroo {
         $results = $stmt->fetchAll();
 
         foreach ($results as $row) {
-            $versions[] = $row['applied_version'];
+            $version = is_array($row) ? ($row['applied_version'] ?? null) : null;
+            if (is_string($version)) {
+                $versions[] = $version;
+            }
         }
         return $versions;
     }

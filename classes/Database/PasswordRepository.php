@@ -22,11 +22,10 @@ class PasswordRepository
         $stmt->execute([$user_id]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            return $result[0]['password_hash'];
-        }
+        $row = $result[0] ?? null;
+        $hash = is_array($row) ? ($row['password_hash'] ?? null) : null;
 
-        return null;
+        return is_string($hash) ? $hash : null;
     }
 
     /**

@@ -24,7 +24,7 @@ class IsLoggedIn
         if(!empty($mla_request->cookie[$this->di_config->cookie_name]))
         {
             $found_user_id = $this->getUserIdForCookieInDatabase(
-                cookie: $mla_request->cookie[$this->di_config->cookie_name],
+                cookie: \Utilities::stringOr($mla_request->cookie[$this->di_config->cookie_name]),
                 ip_address: \Utilities::stringOr($_SERVER['REMOTE_ADDR'] ?? null),
                 user_agent: \Utilities::stringOr($_SERVER['HTTP_USER_AGENT'] ?? null)
             );
@@ -39,7 +39,7 @@ class IsLoggedIn
             // Note: We can't access $csrfProtect from prepend.php here due to architectural constraints
             // For now, we'll accept the login attempt without CSRF check as IsLoggedIn is low-level auth
             // CSRF protection is better enforced at form submission points
-            $found_user_id = $this->checkPHPHashedPassword($mla_request->post['username'], $mla_request->post['pass']);
+            $found_user_id = $this->checkPHPHashedPassword(\Utilities::stringOr($mla_request->post['username']), \Utilities::stringOr($mla_request->post['pass']));
             if(empty($found_user_id))
             {
                 $this->killCookie();        // bad login, so kill any cookie
@@ -63,8 +63,10 @@ class IsLoggedIn
         $stmt->execute([$user_id]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            $this->loggedInUsername = $result[0]['username'] ?? 'ummmmmm wtf';
+        $row = $result[0] ?? null;
+        if (is_array($row)) {
+            $username = $row['username'] ?? null;
+            $this->loggedInUsername = is_string($username) ? $username : 'ummmmmm wtf';
         }
     }
 
@@ -83,10 +85,10 @@ class IsLoggedIn
         $stmt->execute([$this->who_is_logged_in]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            return $result[0]['role'] ?? '';
-        }
-        return '';
+        $row = $result[0] ?? null;
+        $role = is_array($row) ? ($row['role'] ?? null) : null;
+
+        return is_string($role) ? $role : '';
     }
 
     public function isAdmin(): bool
@@ -174,14 +176,10 @@ class IsLoggedIn
         $stmt->execute([$cookie, $varbinary_ip, md5($user_agent)]);
         $result = $stmt->fetchAll();
 
-        if(count($result) > 0)
-        {
-            return $result[0]['user_id'];
-        }
-        else
-        {
-            return 0;
-        }
+        $row = $result[0] ?? null;
+        $user_id = is_array($row) ? ($row['user_id'] ?? null) : null;
+
+        return is_numeric($user_id) ? (int) $user_id : 0;
     }
     public function isLoggedIn(): bool
     {
