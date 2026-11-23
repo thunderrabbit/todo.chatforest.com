@@ -21,7 +21,7 @@ $username = $is_logged_in->getLoggedInUsername();
 $currentYear = (int) date('Y'); // Default to current year
 
 // Parse the URL to determine what we're showing
-$uri_path = $_SERVER['REQUEST_URI'] ?? '';
+$uri_path = \Utilities::stringOr($_SERVER['REQUEST_URI'] ?? null);
 $error_message = '';
 $success_message = '';
 
@@ -60,7 +60,7 @@ if (empty($pathParts)) {
 // Handle creating a new project file
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'create_project') {
     // Get project name from POST (for dashboard form) or from URL
-    $newProjectName = trim($_POST['project_name'] ?? '');
+    $newProjectName = trim(\Utilities::stringOr($_POST['project_name'] ?? null));
     $projectToCreate = !empty($newProjectName) ? $newProjectName : $project;
 
     if ($projectToCreate !== null && !empty($projectToCreate)) {
@@ -83,20 +83,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    $targetFile = $_POST['target_file'] ?? '';
+    $targetFile = \Utilities::stringOr($_POST['target_file'] ?? null);
 
         if (empty($targetFile)) {
             $error_message = "Target file not specified.";
         } else {
             try {
                 // Get the todo data from POST
-                $todoDescription = $_POST['todo_description'] ?? '';
-                $todoCreateDate = $_POST['todo_createDate'] ?? '';
-                $todoCompleteDate = $_POST['todo_completeDate'] ?? '';
+                $todoDescription = \Utilities::stringOr($_POST['todo_description'] ?? null);
+                $todoCreateDate = \Utilities::stringOr($_POST['todo_createDate'] ?? null);
+                $todoCompleteDate = \Utilities::stringOr($_POST['todo_completeDate'] ?? null);
                 $todoIsComplete = !empty($_POST['todo_isComplete']);
                 $todoHasLink = !empty($_POST['todo_hasLink']);
-                $todoLinkText = $_POST['todo_linkText'] ?? '';
-                $todoLinkFile = $_POST['todo_linkFile'] ?? '';
+                $todoLinkText = \Utilities::stringOr($_POST['todo_linkText'] ?? null);
+                $todoLinkFile = \Utilities::stringOr($_POST['todo_linkFile'] ?? null);
 
                 // First, remove from current list
                 $rawContent = $todoReader->readRawContent($username, $currentYear, $project);
@@ -164,8 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     // Check if this is an AJAX request
     $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
 
-    $originalCreateDate = $_POST['todo_originalCreateDate'] ?? '';
-        $originalDescription = $_POST['todo_originalDescription'] ?? '';
+    $originalCreateDate = \Utilities::stringOr($_POST['todo_originalCreateDate'] ?? null);
+        $originalDescription = \Utilities::stringOr($_POST['todo_originalDescription'] ?? null);
 
         if (empty($originalCreateDate) && empty($originalDescription)) {
             $error_message = "Todo item not specified.";
@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $found = false;
                 foreach ($currentTodos as $todo) {
                     $todoCreateDate = $todo['createDate'] ?? '';
-                    $todoDescription = $todo['description'] ?? '';
+                    $todoDescription = $todo['description'];
 
                     // Match using original values (same logic as save)
                     if ($todoCreateDate === $originalCreateDate && $todoDescription === $originalDescription) {
@@ -219,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 // Handle adding new todo
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_todo' && $project !== null) {
-    $newTodoText = trim($_POST['new_todo'] ?? '');
+    $newTodoText = trim(\Utilities::stringOr($_POST['new_todo'] ?? null));
 
         if (!empty($newTodoText)) {
             try {
@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
 
                 // Check if the input has a link (wiki-style [[...]])
-                $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $newTodoText, $linkMatches);
+                $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $newTodoText, $linkMatches) === 1;
                 $linkText = '';
                 $linkFile = '';
 
@@ -260,8 +260,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $description = str_replace('LINK_PLACEHOLDER', '[[' . $linkText . ']]', $description);
                 } else {
                     // Use current client datetime
-                    $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
-                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                    $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? null, 'UTC');
+                    $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
 
                     // Convert client datetime to our format: HH:MM:SS DD-Mon-YYYY
                     try {
@@ -336,32 +336,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
         // Build a map of original todos by key for quick lookup
         $originalTodosMap = [];
         foreach ($originalTodos as $originalTodo) {
-            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
             $originalTodosMap[$key] = $originalTodo;
         }
 
         // Update todo completion status based on form submission
-        /** @var list<array<string, mixed>> $todos Form items, then generated recurring ones */
         $todos = [];
-        $checked = $_POST['todo'] ?? [];
-        $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
+        $checked = is_array($_POST['todo'] ?? null) ? $_POST['todo'] : [];
+        $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? null, 'UTC');
 
         // Track which todos were just completed (for recurring logic)
         $newlyCompletedTodos = [];
 
-        foreach ($_POST['todo_data'] as $index => $todoData) {
+        $todoDataList = is_array($_POST['todo_data']) ? $_POST['todo_data'] : [];
+        foreach ($todoDataList as $index => $todoData) {
+            if (!is_array($todoData)) {
+                continue;
+            }
             // Build todo from form data
             // Store original values for matching (these don't change when item is edited)
-            $originalCreateDate = $todoData['originalCreateDate'] ?? $todoData['createDate'] ?? '';
-            $originalDescription = $todoData['originalDescription'] ?? $todoData['description'] ?? '';
+            $originalCreateDate = \Utilities::stringOr($todoData['originalCreateDate'] ?? $todoData['createDate'] ?? '');
+            $originalDescription = \Utilities::stringOr($todoData['originalDescription'] ?? $todoData['description'] ?? '');
             $todo = [
-                'description' => $todoData['description'] ?? '',
-                'createDate' => $todoData['createDate'] ?? '',
-                'completeDate' => $todoData['completeDate'] ?? '',
+                'description' => \Utilities::stringOr($todoData['description'] ?? ''),
+                'createDate' => \Utilities::stringOr($todoData['createDate'] ?? ''),
+                'completeDate' => \Utilities::stringOr($todoData['completeDate'] ?? ''),
                 'hasLink' => !empty($todoData['hasLink']),
-                'linkText' => $todoData['linkText'] ?? '',
-                'linkFile' => $todoData['linkFile'] ?? '',
-                'recurringMarker' => $todoData['recurringMarker'] ?? '',
+                'linkText' => \Utilities::stringOr($todoData['linkText'] ?? ''),
+                'linkFile' => \Utilities::stringOr($todoData['linkFile'] ?? ''),
+                'recurringMarker' => \Utilities::stringOr($todoData['recurringMarker'] ?? ''),
                 // Store original values for matching
                 'originalCreateDate' => $originalCreateDate,
                 'originalDescription' => $originalDescription,
@@ -375,13 +378,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $wasIncomplete = true;
             if (isset($originalTodosMap[$originalKey])) {
                 $originalTodo = $originalTodosMap[$originalKey];
-                $wasIncomplete = !($originalTodo['isComplete'] ?? false);
+                $wasIncomplete = !$originalTodo['isComplete'];
             }
 
             // Update completion date if just completed
             if ($todo['isComplete'] && empty($todoData['completeDate'])) {
                 // Use current timestamp for completion
-                $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
 
                 try {
                     $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
@@ -397,7 +400,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             if ($todo['isComplete'] && $wasIncomplete && !empty($todo['recurringMarker'])) {
                 // Ensure completeDate is set (use the one from form or set it now)
                 if (empty($todo['completeDate'])) {
-                    $clientDatetime = $_POST['client_datetime'] ?? date('Y-m-d H:i:s');
+                    $clientDatetime = \Utilities::stringOr($_POST['client_datetime'] ?? null, date('Y-m-d H:i:s'));
                     try {
                         $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                         $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
@@ -452,7 +455,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $formTodosMap = [];
             foreach ($todos as $formTodo) {
                 // Use original values for matching (these don't change when item is edited)
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 $formTodosMap[$originalKey] = $formTodo;
             }
 
@@ -462,7 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Build a map of original todos by key for quick lookup
             $originalTodosMap = [];
             foreach ($fullTodos as $originalTodo) {
-                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                 $originalTodosMap[$key] = $originalTodo;
             }
 
@@ -472,7 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $formOrder = [];
             $originalOrder = [];
             foreach ($todos as $formTodo) {
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 if (isset($originalTodosMap[$originalKey])) {
                     $formOrder[] = $originalKey;
                     $originalOrder[] = $originalKey;
@@ -495,7 +498,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // First, add visible items in form order (respecting drag-and-drop)
                 foreach ($todos as $formTodo) {
                     // Use original values to find the matching original todo
-                    $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                    $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                     if (isset($formTodosMap[$originalKey])) {
                         // This is an existing item - update it with edited values
                         // Remove original fields before saving (they're only for matching)
@@ -512,7 +515,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // This preserves hidden items' relative positions
                 $hiddenTodos = [];
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                     if (!isset($processedKeys[$key])) {
                         $hiddenTodos[] = $originalTodo;
                     }
@@ -520,8 +523,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
                 // Sort hidden todos by original index to maintain their relative order
                 usort($hiddenTodos, function($a, $b) {
-                    $indexA = $a['originalIndex'] ?? 999999;
-                    $indexB = $b['originalIndex'] ?? 999999;
+                    $indexA = $a['originalIndex'];
+                    $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
                 });
 
@@ -533,7 +536,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // Items were NOT dragged - preserve original order exactly
                 // Process original todos in their original order
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
 
                     if (isset($formTodosMap[$key])) {
                         // This item was in the form - update it with form data (including any edits)
@@ -554,8 +557,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
                 // Sort by originalIndex to maintain original file order
                 usort($updatedTodos, function($a, $b) {
-                    $indexA = $a['originalIndex'] ?? 999999;
-                    $indexB = $b['originalIndex'] ?? 999999;
+                    $indexA = $a['originalIndex'];
+                    $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
                 });
             }
@@ -565,7 +568,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Use original values to check for matches
             $newRecurringTodos = [];
             foreach ($todos as $formTodo) {
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 if (!isset($matchedOriginalKeys[$originalKey])) {
                     // This is a new item (from recurring completion)
                     // Remove original fields before saving
@@ -650,7 +653,7 @@ try {
 
     // Get client timezone (from POST if available, otherwise default to UTC)
     // JavaScript will update this on form interactions
-    $clientTimezone = $_POST['client_timezone'] ?? $_GET['timezone'] ?? 'UTC';
+    $clientTimezone = \Utilities::stringOr($_POST['client_timezone'] ?? $_GET['timezone'] ?? null, 'UTC');
     if (empty($clientTimezone) || !in_array($clientTimezone, timezone_identifiers_list())) {
         $clientTimezone = 'UTC';
     }
@@ -665,7 +668,7 @@ try {
     $page->set("error_message", $error_message);
     $page->set("success_message", $success_message);
     $page->set("todosHtml", $todoRenderer->renderTodos($todos, $username, $currentYear, $clientTimezone));
-    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $_SERVER['REQUEST_URI'], $username, $currentYear, $clientTimezone));
+    $page->set("formHtml", $todoRenderer->renderTodoForm($todos, $uri_path, $username, $currentYear, $clientTimezone));
 
     $inner = $page->grabTheGoods();
 

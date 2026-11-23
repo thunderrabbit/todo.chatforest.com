@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Trust nothing mixed";
+const SENTIMENTAL_VERSION = "Take request values as strings";
 
 # write errors to screen
 ini_set('display_errors', 1);

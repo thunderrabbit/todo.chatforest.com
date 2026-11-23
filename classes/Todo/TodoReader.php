@@ -7,6 +7,31 @@ namespace Todo;
  *
  * Handles reading todo markdown files and parsing individual todo items
  * including support for wiki-style links [[...]]
+ *
+ * @phpstan-type Todo array{
+ *     isComplete: bool,
+ *     createDate: string|null,
+ *     description: string,
+ *     completeDate: string|null,
+ *     hasLink: bool,
+ *     linkText: string,
+ *     linkFile: string,
+ *     recurringMarker?: string|null,
+ *     originalIndex?: int,
+ *     originalCreateDate?: string,
+ *     originalDescription?: string,
+ * }
+ * @phpstan-type ParsedTodo array{
+ *     isComplete: bool,
+ *     createDate: string|null,
+ *     description: string,
+ *     completeDate: string|null,
+ *     hasLink: bool,
+ *     linkText: string,
+ *     linkFile: string,
+ *     recurringMarker?: string|null,
+ *     originalIndex: int,
+ * }
  */
 class TodoReader
 {
@@ -75,7 +100,7 @@ class TodoReader
      * Parse markdown content into structured todo items
      *
      * @param string $markdown The raw markdown content
-     * @return list<array<string, mixed>> Todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile, originalIndex
+     * @return list<ParsedTodo> Todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile, originalIndex
      */
     public function parseTodos(string $markdown): array
     {
@@ -102,7 +127,7 @@ class TodoReader
      * Linked: - [ ] DD-mon-YYYY [[link text]] or - [x] DD-mon-YYYY [[link text]] DD-mon-YYYY
      *
      * @param string $line The todo line
-     * @return array<string, mixed>|null Parsed todo data or null if not a valid todo line
+     * @return Todo|null Parsed todo data or null if not a valid todo line
      */
     private function parseTodoLine(string $line): ?array
     {
@@ -119,7 +144,7 @@ class TodoReader
         $datePattern = '((?:\d{2}:\d{2}:\d{2}\s+)?\d{2}-[a-z]{3}-\d{4})';
 
         // Check if it has a link (wiki-style [[...]])
-        $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $remainder, $linkMatches);
+        $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $remainder, $linkMatches) === 1;
 
         $createDate = null;
         $completeDate = null;

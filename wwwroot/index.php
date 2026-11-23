@@ -10,7 +10,7 @@ include_once $matches[1] . '/prepend.php';
  * @var \Config $config
  */
 
-$debugLevel = intval(value: $_GET['debug'] ?? 0);
+$debugLevel = intval(value: \Utilities::stringOr($_GET['debug'] ?? null, '0'));
 if($debugLevel > 0) {
     echo "<pre>Debug Level: $debugLevel</pre>";
 }

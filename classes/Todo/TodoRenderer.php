@@ -7,13 +7,15 @@ namespace Todo;
  *
  * Handles rendering todo items with proper HTML markup,
  * including wiki-style links and checkboxes
+ *
+ * @phpstan-import-type Todo from TodoReader
  */
 class TodoRenderer
 {
     /**
      * Render todos as HTML
      *
-     * @param array<int, array<string, mixed>> $todos Todo items
+     * @param array<int, Todo> $todos Todo items
      * @param string $username The username
      * @param int $year The year (YYYY)
      * @param string $clientTimezone Client timezone (e.g., "America/New_York")
@@ -42,7 +44,7 @@ class TodoRenderer
     /**
      * Render a single todo item as HTML
      *
-     * @param array<string, mixed> $todo The todo item
+     * @param Todo $todo The todo item
      * @param int $index The index of the todo (used for form inputs)
      * @param string $username The username
      * @param int $year The year (YYYY)
@@ -128,7 +130,7 @@ class TodoRenderer
         // Hidden inputs to preserve todo data
         // Original values are used to match items even after editing
         $originalCreateDate = $todo['createDate'] ?? '';
-        $originalDescription = $todo['description'] ?? '';
+        $originalDescription = $todo['description'];
         $html .= '<input type="hidden" name="todo_data[' . $index . '][originalCreateDate]" value="' . htmlspecialchars($originalCreateDate) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][originalDescription]" value="' . htmlspecialchars($originalDescription) . '">';
         $html .= '<input type="hidden" name="todo_data[' . $index . '][description]" value="' . htmlspecialchars($todo['description']) . '">';
@@ -147,7 +149,7 @@ class TodoRenderer
     /**
      * Render a todo form for editing
      *
-     * @param array<int, array<string, mixed>> $todos Todo items
+     * @param array<int, Todo> $todos Todo items
      * @param string $actionUrl The form action URL
      * @param string $username The username
      * @param int $year The year (YYYY)
@@ -217,9 +219,9 @@ class TodoRenderer
     /**
      * Filter todos based on age rules and future time rules
      *
-     * @param array<int, array<string, mixed>> $todos Todo items
+     * @param array<int, Todo> $todos Todo items
      * @param string $clientTimezone Client timezone
-     * @return list<array<string, mixed>> Filtered todos
+     * @return list<Todo> Filtered todos
      */
     private function filterTodos(array $todos, string $clientTimezone): array
     {
@@ -275,7 +277,7 @@ class TodoRenderer
     /**
      * Check if item is in the future (>4 hours) and should be dimmed
      *
-     * @param array<string, mixed> $todo The todo item
+     * @param Todo $todo The todo item
      * @param string $clientTimezone Client timezone
      * @return bool True if item should be dimmed
      */
@@ -311,7 +313,7 @@ class TodoRenderer
     /**
      * Check if item should be styled as old (started over 1 week ago)
      *
-     * @param array<string, mixed> $todo The todo item
+     * @param Todo $todo The todo item
      * @param string $clientTimezone Client timezone
      * @return bool True if item should be styled as old
      */

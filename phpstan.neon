@@ -1,6 +1,6 @@
 # Static analysis, run in Docker by ~/work/rob/standards-mcp/run-phpstan.sh.
 parameters:
-    level: 8
+    level: 9
     # The PHP todo.chatforest.com is served on. Analyse as 8.3.
     phpVersion: 80300
     paths:
