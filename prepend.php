@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Expect null";
+const SENTIMENTAL_VERSION = "Catch the null from preg";
 
 # write errors to screen
 ini_set('display_errors', 1);
