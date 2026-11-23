@@ -34,7 +34,7 @@ $recurringCalculator = new \Todo\RecurringCalculator();
 // Parse URL first to get project info
 // URL format: /do/project or /do/username/year/project
 // With .htaccess, we need to handle the path properly
-$pathParts = explode('/', trim(parse_url($uri_path, PHP_URL_PATH), '/'));
+$pathParts = explode('/', trim(parse_url($uri_path, PHP_URL_PATH) ?: '', '/'));
 array_shift($pathParts); // Remove 'do' from the path
 
 if (empty($pathParts)) {
