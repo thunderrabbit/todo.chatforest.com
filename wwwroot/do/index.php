@@ -636,6 +636,9 @@ if ($project === null) {
         exit;
     } catch (\Exception $e) {
         $error_message = "Error loading projects: " . $e->getMessage();
+        http_response_code(500);
+        echo htmlspecialchars($error_message);
+        exit;
     }
 }
 
