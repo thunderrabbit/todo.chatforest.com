@@ -121,7 +121,7 @@ class IsLoggedIn
 
 
     /**
-     * @return array<string, mixed> The user_id and password_hash row, or [] when no user matches
+     * @return array{user_id: int, password_hash: string}|array{} The user's id and password hash, or [] when no user matches
      */
     private function getIDandPHPHashedPasswordForUsername(string $username): array
     {
@@ -130,11 +130,11 @@ class IsLoggedIn
         $stmt->execute([$username]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            return $result[0];
-        } else {
+        $row = $result[0] ?? null;
+        if (!is_array($row) || !is_numeric($row['user_id'] ?? null) || !is_string($row['password_hash'] ?? null)) {
             return [];
         }
+        return ['user_id' => (int) $row['user_id'], 'password_hash' => $row['password_hash']];
     }
     /**
      * Looks up hashed password for username, and checks it against the password provided
