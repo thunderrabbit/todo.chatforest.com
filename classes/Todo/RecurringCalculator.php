@@ -268,7 +268,7 @@ class RecurringCalculator
 
             $monIndex = array_search($mon, $months);
             if ($monIndex !== false) {
-                $monNum = str_pad($monIndex + 1, 2, '0', STR_PAD_LEFT);
+                $monNum = str_pad((string) ($monIndex + 1), 2, '0', STR_PAD_LEFT);
                 $phpDateStr = "$year-$monNum-$day $timePart";
                 try {
                     return new \DateTime($phpDateStr, $timezoneObj);
@@ -285,7 +285,7 @@ class RecurringCalculator
 
                 $monIndex = array_search($mon, $months);
                 if ($monIndex !== false) {
-                    $monNum = str_pad($monIndex + 1, 2, '0', STR_PAD_LEFT);
+                    $monNum = str_pad((string) ($monIndex + 1), 2, '0', STR_PAD_LEFT);
                     $phpDateStr = "$year-$monNum-$day 12:00:00";
                     try {
                         return new \DateTime($phpDateStr, $timezoneObj);
