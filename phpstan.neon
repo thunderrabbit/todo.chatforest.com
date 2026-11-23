@@ -1,6 +1,6 @@
 # Static analysis, run in Docker by ~/work/rob/standards-mcp/run-phpstan.sh.
 parameters:
-    level: 0
+    level: 1
     # The PHP todo.chatforest.com is served on. Analyse as 8.3.
     phpVersion: 80300
     paths:
@@ -9,6 +9,10 @@ parameters:
         - prepend.php
         - Tests
     excludePaths:
+        analyse:
+            # Vendored from "Modernizing Legacy Applications in PHP"
+            # (Paul M. Jones); not ours to fix.
+            - classes/Mlaphp/Request.php
         analyseAndScan:
             # Per-site and gitignored; ConfigSample declares the same class.
             - classes/Config.php (?)
