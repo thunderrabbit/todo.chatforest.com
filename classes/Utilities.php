@@ -35,7 +35,7 @@ class Utilities {
         if (empty($versionWithFile)) {
             throw new \Exception("Migration version with file cannot be empty.");
         }
-        if (strpos($versionWithFile, '..') !== false) {
+        if (str_contains($versionWithFile, '..')) {
             throw new \Exception("Invalid migration path (traversal not allowed): $versionWithFile");
         }
         if (!preg_match('#^[0-9]{2}_[a-zA-Z0-9_-]+/create_[a-zA-Z0-9_-]+\.sql$#', $versionWithFile)) {
