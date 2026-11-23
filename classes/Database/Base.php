@@ -104,7 +104,7 @@ class Base{
     public static function executeMultipleSQL(\PDO $pdo, string $sql): void {
         // Split SQL into individual statements
         $statements = array_filter(
-            array_map('trim', explode(';', $sql)),
+            array_map(trim(...), explode(';', $sql)),
             fn($stmt) => !empty($stmt)
         );
 
