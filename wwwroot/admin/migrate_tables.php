@@ -5,6 +5,12 @@
 preg_match('#^(/home/[^/]+/[^/]+)#', __DIR__, $matches);
 include_once $matches[1] . '/prepend.php';
 
+/**
+ * @var \Auth\IsLoggedIn $is_logged_in
+ * @var \Config $config
+ * @var \Database\DBExistaroo $dbExistaroo
+ */
+
 if ($is_logged_in->isLoggedIn() && $is_logged_in->isAdmin()) {
     $page = new \Template(config: $config);
     $page->setTemplate("admin/migrate_tables.tpl.php");
