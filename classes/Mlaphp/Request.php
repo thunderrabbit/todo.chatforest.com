@@ -132,7 +132,7 @@ class Request
      * @throws InvalidArgumentException for any $name other than 'session'.
      * @throws DomainException when $_SESSION is not set.
      */
-    public function &__get(string $name)
+    public function &__get(string $name): mixed
     {
         if ($name !== 'session') {
             throw new InvalidArgumentException($name);
@@ -167,7 +167,7 @@ class Request
      * @param string $name The property name; must be 'session'.
      * @return null
      */
-    public function __unset($name)
+    public function __unset(string $name)
     {
         if ($name != 'session') {
             throw new InvalidArgumentException;
