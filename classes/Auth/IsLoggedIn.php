@@ -63,8 +63,10 @@ class IsLoggedIn
         $stmt->execute([$user_id]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            $this->loggedInUsername = $result[0]['username'] ?? 'ummmmmm wtf';
+        $row = $result[0] ?? null;
+        if (is_array($row)) {
+            $username = $row['username'] ?? null;
+            $this->loggedInUsername = is_string($username) ? $username : 'ummmmmm wtf';
         }
     }
 
@@ -83,10 +85,10 @@ class IsLoggedIn
         $stmt->execute([$this->who_is_logged_in]);
         $result = $stmt->fetchAll();
 
-        if (count($result) > 0) {
-            return $result[0]['role'] ?? '';
-        }
-        return '';
+        $row = $result[0] ?? null;
+        $role = is_array($row) ? ($row['role'] ?? null) : null;
+
+        return is_string($role) ? $role : '';
     }
 
     public function isAdmin(): bool
@@ -174,14 +176,10 @@ class IsLoggedIn
         $stmt->execute([$cookie, $varbinary_ip, md5($user_agent)]);
         $result = $stmt->fetchAll();
 
-        if(count($result) > 0)
-        {
-            return $result[0]['user_id'];
-        }
-        else
-        {
-            return 0;
-        }
+        $row = $result[0] ?? null;
+        $user_id = is_array($row) ? ($row['user_id'] ?? null) : null;
+
+        return is_numeric($user_id) ? (int) $user_id : 0;
     }
     public function isLoggedIn(): bool
     {
