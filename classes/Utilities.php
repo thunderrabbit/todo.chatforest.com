@@ -48,7 +48,7 @@ class Utilities {
         $realBase = realpath($appPath . "/db_schemas");
         $realTarget = realpath($fullPath);
 
-        if ($realBase === false || !$realTarget || strpos($realTarget, $realBase) !== 0) {
+        if ($realBase === false || !$realTarget || !str_starts_with($realTarget, $realBase)) {
             throw new \Exception("Resolved path escapes base directory: $versionWithFile");
         }
 
