@@ -18,7 +18,7 @@ if (!$is_logged_in->isLoggedIn()) {
 
 // Get the logged in username
 $username = $is_logged_in->getLoggedInUsername();
-$currentYear = date('Y'); // Default to current year
+$currentYear = (int) date('Y'); // Default to current year
 
 // Parse the URL to determine what we're showing
 $uri_path = $_SERVER['REQUEST_URI'] ?? '';
