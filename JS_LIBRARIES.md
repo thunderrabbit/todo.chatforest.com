@@ -10,6 +10,7 @@ step, no npm, and no import map or `import` statements.
 - **Version**: 1.15.0 (from the URL path)
 - **Loaded at**: `templates/layout/admin_base.tpl.php:10`, as
   `src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"`
+  with `integrity="sha384-eeLEhtwdMwD3X9y+8P3Cn7Idl/M+w8H4uZqkgD/2eJVkWIN1yKzEj6XegJ9dL3q0"` and `crossorigin="anonymous"`
   (admin pages only; `templates/layout/base.tpl.php` does not load it)
 - **How**: CDN (cdnjs)
 - **Needs**: nothing
@@ -39,5 +40,5 @@ step, no npm, and no import map or `import` statements.
 
 - SortableJS is pinned to an exact version on a CDN path that still serves
   newer releases (1.15.7 is on cdnjs); no path change is needed to move up.
-- The CDN script has no `integrity` attribute.
+- The CDN script carries an `integrity` sha384 hash and `crossorigin="anonymous"`; a version change needs a new hash.
 - Nothing depends on jQuery; no build step exists.
