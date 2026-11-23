@@ -12,7 +12,7 @@ namespace Todo;
 class TodoWriter
 {
     public function __construct(
-        private \Config $config,
+        private readonly \Config $config,
     ) {
     }
 

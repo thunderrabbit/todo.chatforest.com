@@ -9,7 +9,7 @@ preg_match('#^(/home/[^/]+/[^/]+)#', __DIR__, $matches);
 include_once $matches[1] . '/classes/Mlaphp/Autoloader.php';
 // create autoloader instance and register the method with SPL
 $autoloader = new \Mlaphp\Autoloader();
-spl_autoload_register(array($autoloader, 'load'));
+spl_autoload_register($autoloader->load(...));
 
 // Start session
 session_start();

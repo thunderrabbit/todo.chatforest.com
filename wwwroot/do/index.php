@@ -267,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     try {
                         $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                         $createDate = $dt->format('H:i:s d-M-Y');
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         // Fallback to server time
                         $createDate = date('H:i:s d-M-Y');
                     }
@@ -389,7 +389,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 try {
                     $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                     $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     $todo['completeDate'] = date('H:i:s d-M-Y');
                 }
             } elseif (!$todo['isComplete']) {
@@ -404,7 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                     try {
                         $dt = new \DateTime($clientDatetime, new \DateTimeZone($clientTimezone));
                         $todo['completeDate'] = $dt->format('H:i:s d-M-Y');
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         $todo['completeDate'] = date('H:i:s d-M-Y');
                     }
                 }

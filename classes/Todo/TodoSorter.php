@@ -99,9 +99,7 @@ class TodoSorter
         // Handle both "03-Nov-2025" and "03-nov-2025"
         $datePart = preg_replace_callback(
             '/(\d{2})-([a-z]{3})-(\d{4})/i',
-            function($matches) {
-                return $matches[1] . '-' . ucfirst(strtolower($matches[2])) . '-' . $matches[3];
-            },
+            fn($matches) => $matches[1] . '-' . ucfirst(strtolower($matches[2])) . '-' . $matches[3],
             $dateOnly
         ) ?? $dateOnly;
 
@@ -130,7 +128,7 @@ class TodoSorter
                     return $dt->getTimestamp();
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // If parsing fails, return 0
         }
 

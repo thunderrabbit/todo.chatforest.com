@@ -41,10 +41,10 @@ class RecurringCalculator
         // Calculate based on marker type
         if ($recurringMarker === '#d') {
             $nextDate = $this->nextDaily($completionDateTime, $timeComponent);
-        } elseif (strpos($recurringMarker, '#w:') === 0) {
+        } elseif (str_starts_with($recurringMarker, '#w:')) {
             $days = $this->parseWeeklyDays($recurringMarker);
             $nextDate = $this->nextWeekly($completionDateTime, $days, $timeComponent);
-        } elseif (strpos($recurringMarker, '#m:') === 0) {
+        } elseif (str_starts_with($recurringMarker, '#m:')) {
             $dayNumbers = $this->parseMonthlyDays($recurringMarker);
             $nextDate = $this->nextMonthly($completionDateTime, $dayNumbers, $timeComponent);
         } else {
@@ -253,7 +253,7 @@ class RecurringCalculator
 
         try {
             $timezoneObj = new \DateTimeZone($timezone);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $timezoneObj = new \DateTimeZone('UTC');
         }
 
@@ -272,7 +272,7 @@ class RecurringCalculator
                 $phpDateStr = "$year-$monNum-$day $timePart";
                 try {
                     return new \DateTime($phpDateStr, $timezoneObj);
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     return null;
                 }
             }
@@ -289,7 +289,7 @@ class RecurringCalculator
                     $phpDateStr = "$year-$monNum-$day 12:00:00";
                     try {
                         return new \DateTime($phpDateStr, $timezoneObj);
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         return null;
                     }
                 }

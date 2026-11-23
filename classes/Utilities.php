@@ -35,7 +35,7 @@ class Utilities {
         if (empty($versionWithFile)) {
             throw new \Exception("Migration version with file cannot be empty.");
         }
-        if (strpos($versionWithFile, '..') !== false) {
+        if (str_contains($versionWithFile, '..')) {
             throw new \Exception("Invalid migration path (traversal not allowed): $versionWithFile");
         }
         if (!preg_match('#^[0-9]{2}_[a-zA-Z0-9_-]+/create_[a-zA-Z0-9_-]+\.sql$#', $versionWithFile)) {
@@ -48,7 +48,7 @@ class Utilities {
         $realBase = realpath($appPath . "/db_schemas");
         $realTarget = realpath($fullPath);
 
-        if ($realBase === false || !$realTarget || strpos($realTarget, $realBase) !== 0) {
+        if ($realBase === false || !$realTarget || !str_starts_with($realTarget, $realBase)) {
             throw new \Exception("Resolved path escapes base directory: $versionWithFile");
         }
 

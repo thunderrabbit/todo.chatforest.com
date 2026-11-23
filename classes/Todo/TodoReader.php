@@ -36,7 +36,7 @@ namespace Todo;
 class TodoReader
 {
     public function __construct(
-        private \Config $config,
+        private readonly \Config $config,
     ) {
     }
 

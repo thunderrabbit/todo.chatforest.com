@@ -35,7 +35,7 @@ class Base{
                 $offset = sprintf('%+d:%02d', $hrs*$sgn, $mins);
                 self::$pdo->exec("SET time_zone='$offset'");
 
-            } catch (\PDOException $e) {
+            } catch (\PDOException) {
                 // Try once more with a sleep (mimic original behavior)
                 sleep(1);
                 try {
@@ -104,8 +104,8 @@ class Base{
     public static function executeMultipleSQL(\PDO $pdo, string $sql): void {
         // Split SQL into individual statements
         $statements = array_filter(
-            array_map('trim', explode(';', $sql)),
-            function($stmt) { return !empty($stmt); }
+            array_map(trim(...), explode(';', $sql)),
+            fn($stmt) => !empty($stmt)
         );
 
         foreach ($statements as $statement) {
