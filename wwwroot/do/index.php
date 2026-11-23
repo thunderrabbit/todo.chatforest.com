@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $found = false;
                 foreach ($currentTodos as $todo) {
                     $todoCreateDate = $todo['createDate'] ?? '';
-                    $todoDescription = $todo['description'] ?? '';
+                    $todoDescription = $todo['description'];
 
                     // Match using original values (same logic as save)
                     if ($todoCreateDate === $originalCreateDate && $todoDescription === $originalDescription) {
@@ -232,7 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 }
 
                 // Check if the input has a link (wiki-style [[...]])
-                $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $newTodoText, $linkMatches);
+                $hasLink = preg_match('/\[\[([^\]]+)\]\]/', $newTodoText, $linkMatches) === 1;
                 $linkText = '';
                 $linkFile = '';
 
@@ -336,12 +336,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
         // Build a map of original todos by key for quick lookup
         $originalTodosMap = [];
         foreach ($originalTodos as $originalTodo) {
-            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+            $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
             $originalTodosMap[$key] = $originalTodo;
         }
 
         // Update todo completion status based on form submission
-        /** @var list<array<string, mixed>> $todos Form items, then generated recurring ones */
         $todos = [];
         $checked = $_POST['todo'] ?? [];
         $clientTimezone = $_POST['client_timezone'] ?? 'UTC';
@@ -349,19 +348,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
         // Track which todos were just completed (for recurring logic)
         $newlyCompletedTodos = [];
 
-        foreach ($_POST['todo_data'] as $index => $todoData) {
+        $todoDataList = is_array($_POST['todo_data']) ? $_POST['todo_data'] : [];
+        foreach ($todoDataList as $index => $todoData) {
+            if (!is_array($todoData)) {
+                continue;
+            }
             // Build todo from form data
             // Store original values for matching (these don't change when item is edited)
-            $originalCreateDate = $todoData['originalCreateDate'] ?? $todoData['createDate'] ?? '';
-            $originalDescription = $todoData['originalDescription'] ?? $todoData['description'] ?? '';
+            $originalCreateDate = \Utilities::stringOr($todoData['originalCreateDate'] ?? $todoData['createDate'] ?? '');
+            $originalDescription = \Utilities::stringOr($todoData['originalDescription'] ?? $todoData['description'] ?? '');
             $todo = [
-                'description' => $todoData['description'] ?? '',
-                'createDate' => $todoData['createDate'] ?? '',
-                'completeDate' => $todoData['completeDate'] ?? '',
+                'description' => \Utilities::stringOr($todoData['description'] ?? ''),
+                'createDate' => \Utilities::stringOr($todoData['createDate'] ?? ''),
+                'completeDate' => \Utilities::stringOr($todoData['completeDate'] ?? ''),
                 'hasLink' => !empty($todoData['hasLink']),
-                'linkText' => $todoData['linkText'] ?? '',
-                'linkFile' => $todoData['linkFile'] ?? '',
-                'recurringMarker' => $todoData['recurringMarker'] ?? '',
+                'linkText' => \Utilities::stringOr($todoData['linkText'] ?? ''),
+                'linkFile' => \Utilities::stringOr($todoData['linkFile'] ?? ''),
+                'recurringMarker' => \Utilities::stringOr($todoData['recurringMarker'] ?? ''),
                 // Store original values for matching
                 'originalCreateDate' => $originalCreateDate,
                 'originalDescription' => $originalDescription,
@@ -375,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $wasIncomplete = true;
             if (isset($originalTodosMap[$originalKey])) {
                 $originalTodo = $originalTodosMap[$originalKey];
-                $wasIncomplete = !($originalTodo['isComplete'] ?? false);
+                $wasIncomplete = !$originalTodo['isComplete'];
             }
 
             // Update completion date if just completed
@@ -452,7 +455,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $formTodosMap = [];
             foreach ($todos as $formTodo) {
                 // Use original values for matching (these don't change when item is edited)
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 $formTodosMap[$originalKey] = $formTodo;
             }
 
@@ -462,7 +465,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Build a map of original todos by key for quick lookup
             $originalTodosMap = [];
             foreach ($fullTodos as $originalTodo) {
-                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                 $originalTodosMap[$key] = $originalTodo;
             }
 
@@ -472,7 +475,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             $formOrder = [];
             $originalOrder = [];
             foreach ($todos as $formTodo) {
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 if (isset($originalTodosMap[$originalKey])) {
                     $formOrder[] = $originalKey;
                     $originalOrder[] = $originalKey;
@@ -495,7 +498,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // First, add visible items in form order (respecting drag-and-drop)
                 foreach ($todos as $formTodo) {
                     // Use original values to find the matching original todo
-                    $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                    $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                     if (isset($formTodosMap[$originalKey])) {
                         // This is an existing item - update it with edited values
                         // Remove original fields before saving (they're only for matching)
@@ -512,7 +515,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // This preserves hidden items' relative positions
                 $hiddenTodos = [];
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
                     if (!isset($processedKeys[$key])) {
                         $hiddenTodos[] = $originalTodo;
                     }
@@ -520,8 +523,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
                 // Sort hidden todos by original index to maintain their relative order
                 usort($hiddenTodos, function($a, $b) {
-                    $indexA = $a['originalIndex'] ?? 999999;
-                    $indexB = $b['originalIndex'] ?? 999999;
+                    $indexA = $a['originalIndex'];
+                    $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
                 });
 
@@ -533,7 +536,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
                 // Items were NOT dragged - preserve original order exactly
                 // Process original todos in their original order
                 foreach ($fullTodos as $originalTodo) {
-                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description'] ?? '');
+                    $key = ($originalTodo['createDate'] ?? '') . '|' . ($originalTodo['description']);
 
                     if (isset($formTodosMap[$key])) {
                         // This item was in the form - update it with form data (including any edits)
@@ -554,8 +557,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
 
                 // Sort by originalIndex to maintain original file order
                 usort($updatedTodos, function($a, $b) {
-                    $indexA = $a['originalIndex'] ?? 999999;
-                    $indexB = $b['originalIndex'] ?? 999999;
+                    $indexA = $a['originalIndex'];
+                    $indexB = $b['originalIndex'];
                     return $indexA <=> $indexB;
                 });
             }
@@ -565,7 +568,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['todo_data']) && $proj
             // Use original values to check for matches
             $newRecurringTodos = [];
             foreach ($todos as $formTodo) {
-                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate'] ?? '') . '|' . ($formTodo['originalDescription'] ?? $formTodo['description'] ?? '');
+                $originalKey = ($formTodo['originalCreateDate'] ?? $formTodo['createDate']) . '|' . ($formTodo['originalDescription'] ?? $formTodo['description']);
                 if (!isset($matchedOriginalKeys[$originalKey])) {
                     // This is a new item (from recurring completion)
                     // Remove original fields before saving
