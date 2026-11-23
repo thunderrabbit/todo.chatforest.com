@@ -24,7 +24,6 @@ class TodoSorter
         $group1 = []; // Unfinished link-items
         $group2 = []; // Finished items
         $group3 = []; // Unfinished non-link items
-        $other = [];  // Other lines (empty, comments, etc.)
 
         foreach ($todos as $todo) {
             $isComplete = $todo['isComplete'] ?? false;
@@ -36,12 +35,9 @@ class TodoSorter
             } elseif ($isComplete) {
                 // Group 2: Finished items
                 $group2[] = $todo;
-            } elseif (!$isComplete && !$hasLink) {
+            } else {
                 // Group 3: Unfinished non-link items
                 $group3[] = $todo;
-            } else {
-                // Other items (shouldn't happen, but just in case)
-                $other[] = $todo;
             }
         }
 
@@ -66,8 +62,8 @@ class TodoSorter
             return $timeA <=> $timeB;
         });
 
-        // Combine groups in order: Group 1, Group 2, Group 3, Other
-        return array_merge($group1, $group2, $group3, $other);
+        // Combine groups in order: Group 1, Group 2, Group 3
+        return array_merge($group1, $group2, $group3);
     }
 
     /**
