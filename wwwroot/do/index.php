@@ -8,6 +8,7 @@ include_once $matches[1] . '/prepend.php';
 /**
  * @var \Auth\IsLoggedIn $is_logged_in
  * @var \Config $config
+ * @var int $admin_count
  */
 
 // Check if user is logged in
@@ -619,7 +620,7 @@ if ($project === null) {
     try {
         $projects = $todoReader->listProjects($username, $currentYear);
 
-        $page = new \Template(config: $config);
+        $page = new \Template(config: $config, admin_count: $admin_count);
         $page->setTemplate("todos/dashboard.tpl.php");
         $page->set("username", $username);
         $page->set("year", $currentYear);
@@ -629,7 +630,7 @@ if ($project === null) {
 
         $inner = $page->grabTheGoods();
 
-        $layout = new \Template(config: $config);
+        $layout = new \Template(config: $config, admin_count: $admin_count);
         $layout->setTemplate("layout/admin_base.tpl.php");
         $layout->set("page_title", "My Todos");
         $layout->set("page_content", $inner);
@@ -659,7 +660,7 @@ try {
     }
 
     // Render the page
-    $page = new \Template(config: $config);
+    $page = new \Template(config: $config, admin_count: $admin_count);
     $page->setTemplate("todos/view.tpl.php");
     $page->set("username", $username);
     $page->set("year", $currentYear);
@@ -672,7 +673,7 @@ try {
 
     $inner = $page->grabTheGoods();
 
-    $layout = new \Template(config: $config);
+    $layout = new \Template(config: $config, admin_count: $admin_count);
     $layout->setTemplate("layout/admin_base.tpl.php");
     $layout->set("page_title", "Todo: " . htmlspecialchars($project));
     $layout->set("page_content", $inner);
@@ -682,7 +683,7 @@ try {
 
 } catch (\Exception $e) {
     // File doesn't exist - show empty page or 404
-    $page = new \Template(config: $config);
+    $page = new \Template(config: $config, admin_count: $admin_count);
     $page->setTemplate("todos/404.tpl.php");
     $page->set("username", $username);
     $page->set("project", $project);
@@ -691,7 +692,7 @@ try {
 
     $inner = $page->grabTheGoods();
 
-    $layout = new \Template(config: $config);
+    $layout = new \Template(config: $config, admin_count: $admin_count);
     $layout->setTemplate("layout/admin_base.tpl.php");
     $layout->set("page_title", "Todo Not Found");
     $layout->set("page_content", $inner);

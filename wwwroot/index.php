@@ -8,6 +8,7 @@ include_once $matches[1] . '/prepend.php';
 /**
  * @var \Auth\IsLoggedIn $is_logged_in
  * @var \Config $config
+ * @var int $admin_count
  */
 
 $debugLevel = intval(value: \Utilities::stringOr($_GET['debug'] ?? null, '0'));
@@ -17,14 +18,14 @@ if($debugLevel > 0) {
 
 if($is_logged_in->isLoggedIn()){
     // Logged in - show main site homepage
-    $page = new \Template(config: $config);
+    $page = new \Template(config: $config, admin_count: $admin_count);
     $page->setTemplate("layout/admin_base.tpl.php");
     $page->set("page_title", "Slide Chat Forest");
     $page->set("username", $is_logged_in->getLoggedInUsername());
     $page->set("site_version", SENTIMENTAL_VERSION);
 
     // Get the inner content
-    $inner_page = new \Template(config: $config);
+    $inner_page = new \Template(config: $config, admin_count: $admin_count);
     $inner_page->setTemplate("index.tpl.php");
     $inner_page->set("username", $is_logged_in->getLoggedInUsername());
     $inner_page->set("is_admin", $is_logged_in->isAdmin());
