@@ -75,7 +75,7 @@ class TodoReader
      * Parse markdown content into structured todo items
      *
      * @param string $markdown The raw markdown content
-     * @return array Array of todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile, originalIndex
+     * @return list<array<string, mixed>> Todo items, each with: isComplete, createDate, description, completeDate, hasLink, linkText, linkFile, originalIndex
      */
     public function parseTodos(string $markdown): array
     {
@@ -102,7 +102,7 @@ class TodoReader
      * Linked: - [ ] DD-mon-YYYY [[link text]] or - [x] DD-mon-YYYY [[link text]] DD-mon-YYYY
      *
      * @param string $line The todo line
-     * @return array|null Parsed todo data or null if not a valid todo line
+     * @return array<string, mixed>|null Parsed todo data or null if not a valid todo line
      */
     private function parseTodoLine(string $line): ?array
     {
@@ -243,7 +243,7 @@ class TodoReader
      *
      * @param string $username The username
      * @param int $year The year (YYYY)
-     * @return array Array of project names (without .md extension)
+     * @return list<string> Project names (without .md extension)
      */
     public function listProjects(string $username, int $year): array
     {

@@ -13,7 +13,7 @@ class TodoRenderer
     /**
      * Render todos as HTML
      *
-     * @param array $todos Array of todo items
+     * @param array<int, array<string, mixed>> $todos Todo items
      * @param string $username The username
      * @param int $year The year (YYYY)
      * @param string $clientTimezone Client timezone (e.g., "America/New_York")
@@ -42,7 +42,7 @@ class TodoRenderer
     /**
      * Render a single todo item as HTML
      *
-     * @param array $todo The todo item
+     * @param array<string, mixed> $todo The todo item
      * @param int $index The index of the todo (used for form inputs)
      * @param string $username The username
      * @param int $year The year (YYYY)
@@ -147,7 +147,7 @@ class TodoRenderer
     /**
      * Render a todo form for editing
      *
-     * @param array $todos Array of todo items
+     * @param array<int, array<string, mixed>> $todos Todo items
      * @param string $actionUrl The form action URL
      * @param string $username The username
      * @param int $year The year (YYYY)
@@ -176,7 +176,7 @@ class TodoRenderer
     /**
      * Render project list
      *
-     * @param array $projects Array of project names
+     * @param array<int, string> $projects Project names
      * @param string $username The username
      * @param int $year The year (YYYY)
      * @return string HTML content
@@ -217,9 +217,9 @@ class TodoRenderer
     /**
      * Filter todos based on age rules and future time rules
      *
-     * @param array $todos Array of todo items
+     * @param array<int, array<string, mixed>> $todos Todo items
      * @param string $clientTimezone Client timezone
-     * @return array Filtered todos
+     * @return list<array<string, mixed>> Filtered todos
      */
     private function filterTodos(array $todos, string $clientTimezone): array
     {
@@ -275,7 +275,7 @@ class TodoRenderer
     /**
      * Check if item is in the future (>4 hours) and should be dimmed
      *
-     * @param array $todo The todo item
+     * @param array<string, mixed> $todo The todo item
      * @param string $clientTimezone Client timezone
      * @return bool True if item should be dimmed
      */
@@ -311,7 +311,7 @@ class TodoRenderer
     /**
      * Check if item should be styled as old (started over 1 week ago)
      *
-     * @param array $todo The todo item
+     * @param array<string, mixed> $todo The todo item
      * @param string $clientTimezone Client timezone
      * @return bool True if item should be styled as old
      */

@@ -20,7 +20,7 @@ class TodoWriter
      * @param string $username The username
      * @param int $year The year (YYYY)
      * @param string $project The project name (without .md extension)
-     * @param array $todos Array of todo items (as returned by TodoReader)
+     * @param array<int, array<string, mixed>> $todos Todo items (as returned by TodoReader)
      * @return bool True on success
      * @throws \Exception If writing fails
      */
@@ -82,7 +82,7 @@ class TodoWriter
     /**
      * Convert todo items array to markdown format
      *
-     * @param array $todos Array of todo items
+     * @param array<int, array<string, mixed>> $todos Todo items
      * @return string Markdown formatted content
      */
     private function todosToMarkdown(array $todos): string
@@ -99,7 +99,7 @@ class TodoWriter
     /**
      * Convert a single todo item to markdown line
      *
-     * @param array $todo The todo item
+     * @param array<string, mixed> $todo The todo item
      * @return string Markdown formatted line
      */
     private function todoToMarkdownLine(array $todo): string
