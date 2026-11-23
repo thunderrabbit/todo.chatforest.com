@@ -241,7 +241,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 if ($hasLink) {
                     $linkText = $linkMatches[1];
                     $linkFile = $todoReader->linkTextToFileName($linkText);
-                    $textWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $newTodoText);
+                    $textWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $newTodoText) ?? $newTodoText;
                 }
 
                 // Now check for date at the start

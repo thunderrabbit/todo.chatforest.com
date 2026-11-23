@@ -64,7 +64,7 @@ class TodoReader
     private function sanitizeProjectName(string $project): string
     {
         // Allow alphanumeric, underscores, hyphens only
-        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $project);
+        $sanitized = preg_replace('/[^a-zA-Z0-9_-]/', '_', $project) ?? '';
         // Remove leading/trailing underscores
         $sanitized = trim($sanitized, '_');
         // Ensure it's not empty
@@ -132,7 +132,7 @@ class TodoReader
             $linkFile = $this->linkTextToFileName($linkText);
 
             // Replace the link with placeholder for date parsing
-            $remainderWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $remainder);
+            $remainderWithPlaceholder = preg_replace('/\[\[([^\]]+)\]\]/', 'LINK_PLACEHOLDER', $remainder) ?? $remainder;
 
             // Extract dates
             if (preg_match_all("/$datePattern/i", $remainderWithPlaceholder, $dateMatches)) {
