@@ -75,4 +75,61 @@ class AdminNotificationsTest extends Unit
 
         $this->assertSame(1, (new \Admin\Notifications($this->pdo, $now))->dueCount());
     }
+
+    public function testListDueMatchesDueCount(): void
+    {
+        $this->createTable();
+        $this->insert('2027-04-01 00:00:00');
+        $this->insert('2027-03-31 23:59:59');
+        $this->insert('2027-04-01 00:00:01');
+        $this->insert('2027-03-01 00:00:00', '2027-03-02 00:00:00');
+
+        $due = $this->notifications()->listDue();
+
+        $this->assertSame(
+            ['2027-03-31 23:59:59', '2027-04-01 00:00:00'],
+            array_map(static fn(\Admin\Notification $n): string => $n->show_from, $due),
+        );
+        $this->assertSame(2, $due[0]->notification_id);
+        $this->assertSame('m', $due[0]->message);
+        $this->assertNull($due[0]->link);
+    }
+
+    public function testListDueCarriesTheLink(): void
+    {
+        $this->createTable();
+        $this->pdo->exec(
+            "INSERT INTO notifications (message, link, show_from, created_at)
+             VALUES ('Revisit', '/tqiq/', '2027-04-01 00:00:00', '2026-11-16 00:00:00')"
+        );
+
+        $this->assertSame('/tqiq/', $this->notifications()->listDue()[0]->link);
+    }
+
+    public function testMissingTableListsNothing(): void
+    {
+        $this->assertSame([], $this->notifications()->listDue());
+    }
+
+    public function testListUpcomingIsWhatIsNeitherDueNorCompleted(): void
+    {
+        $this->createTable();
+        $this->insert('2027-06-01 00:00:00');
+        $this->insert('2027-04-01 00:00:00');
+        $this->insert('2027-04-01 00:00:01');
+        $this->insert('2027-05-01 00:00:00', '2027-03-02 00:00:00');
+
+        $this->assertSame(
+            ['2027-04-01 00:00:01', '2027-06-01 00:00:00'],
+            array_map(
+                static fn(\Admin\Notification $n): string => $n->show_from,
+                $this->notifications()->listUpcoming(),
+            ),
+        );
+    }
+
+    public function testMissingTableListsNothingUpcoming(): void
+    {
+        $this->assertSame([], $this->notifications()->listUpcoming());
+    }
 }
