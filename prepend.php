@@ -1,6 +1,6 @@
 <?php
 
-const SENTIMENTAL_VERSION = "Admin chip for pending migrations";
+const SENTIMENTAL_VERSION = "Admin notifications table and count";
 
 # write errors to screen
 ini_set('display_errors', 1);
