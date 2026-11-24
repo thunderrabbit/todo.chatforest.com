@@ -14,6 +14,12 @@ namespace Admin;
  */
 final readonly class Notifications
 {
+    /** The longest message the "Remind me" form takes, in characters. */
+    public const int MESSAGE_MAX = 1000;
+
+    /** The link column's width. */
+    public const int LINK_MAX = 255;
+
     private \DateTimeImmutable $now;
 
     /** @param ?\DateTimeImmutable $now null means now; read in UTC either way */
@@ -83,6 +89,43 @@ final readonly class Notifications
     }
 
     /**
+     * Add a notification from the "Remind me" form: shown from 00:00 UTC of
+     * the given day (a past day is due at once). The link is optional, and
+     * kept only if it is a path on this site, the same rule the page draws
+     * links by, so nothing is stored that would never be shown.
+     */
+    public function remind(mixed $date, mixed $message, mixed $link): RemindResult
+    {
+        $utc = new \DateTimeZone('UTC');
+        $day = is_string($date) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date, $utc) : false;
+        if ($day === false || $day->format('Y-m-d') !== $date) {
+            return RemindResult::BadDate;
+        }
+        $message = is_string($message) ? trim($message) : '';
+        if ($message === '' || mb_strlen($message) > self::MESSAGE_MAX) {
+            return RemindResult::BadMessage;
+        }
+        $link = is_string($link) ? trim($link) : '';
+        if ($link !== '' && !self::isSitePath($link)) {
+            return RemindResult::BadLink;
+        }
+        try {
+            $stmt = $this->pdo->prepare(
+                "INSERT INTO notifications (message, link, show_from, created_at) VALUES (?, ?, ?, ?)"
+            );
+            $stmt->execute([
+                $message,
+                $link === '' ? null : $link,
+                $day->format('Y-m-d H:i:s'),
+                $this->now->format('Y-m-d H:i:s'),
+            ]);
+        } catch (\PDOException) {
+            return RemindResult::Failed;
+        }
+        return RemindResult::Added;
+    }
+
+    /**
      * @param array<mixed> $rows
      * @return list<Notification>
      */
@@ -122,5 +165,15 @@ final readonly class Notifications
             return false;
         }
         return $stmt->rowCount() === 1;
+    }
+
+    /**
+     * A path on this site: one slash first, never two, and nothing a browser
+     * could read as another host (no backslash, scheme or whitespace).
+     */
+    public static function isSitePath(string $link): bool
+    {
+        return strlen($link) <= self::LINK_MAX
+            && preg_match('#\A/(?![/\\\\])[A-Za-z0-9/._~%?=&+-]*\z#', $link) === 1;
     }
 }
