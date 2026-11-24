@@ -8,6 +8,7 @@ include_once $matches[1] . '/prepend.php';
 /**
  * @var \Auth\IsLoggedIn $is_logged_in
  * @var \Config $config
+ * @var \PDO $mla_database
  * @var int $admin_count
  * @var \Database\DBExistaroo $dbExistaroo
  */
@@ -20,6 +21,7 @@ if ($is_logged_in->isLoggedIn() && $is_logged_in->isAdmin()) {
 
     $pending = $dbExistaroo->getPendingMigrations();
     $page->set(name: "has_pending_migrations", value: !empty($pending));
+    $page->set(name: "due_notifications", value: (new \Admin\Notifications($mla_database))->dueCount());
     $inner = $page->grabTheGoods();
 
     $layout = new \Template(config: $config, admin_count: $admin_count);
