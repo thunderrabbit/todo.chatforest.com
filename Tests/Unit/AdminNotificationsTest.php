@@ -132,4 +132,56 @@ class AdminNotificationsTest extends Unit
     {
         $this->assertSame([], $this->notifications()->listUpcoming());
     }
+
+    public function testCompleteRecordsWhoAndWhen(): void
+    {
+        $this->createTable();
+        $this->insert('2027-03-31 23:59:59');
+        $this->insert('2027-04-01 00:00:00');
+
+        $this->assertTrue($this->notifications()->complete(1, 7));
+
+        $row = $this->pdo->query(
+            "SELECT completed_at, completed_by FROM notifications WHERE notification_id = 1"
+        );
+        $this->assertNotFalse($row);
+        $this->assertEquals(
+            ['completed_at' => '2027-04-01 00:00:00', 'completed_by' => 7],
+            $row->fetch(\PDO::FETCH_ASSOC),
+        );
+        $this->assertSame(1, $this->notifications()->dueCount());
+    }
+
+    public function testSecondCompleteReturnsFalse(): void
+    {
+        $this->createTable();
+        $this->insert('2027-03-31 23:59:59');
+
+        $this->assertTrue($this->notifications()->complete(1, 7));
+        $this->assertFalse($this->notifications()->complete(1, 8));
+
+        $by = $this->pdo->query("SELECT completed_by FROM notifications WHERE notification_id = 1");
+        $this->assertNotFalse($by);
+        $this->assertEquals(7, $by->fetchColumn());
+    }
+
+    public function testCompleteUnknownIdReturnsFalse(): void
+    {
+        $this->createTable();
+
+        $this->assertFalse($this->notifications()->complete(99, 7));
+    }
+
+    public function testCompleteWithoutTheTableReturnsFalse(): void
+    {
+        $this->assertFalse($this->notifications()->complete(1, 7));
+    }
+
+    public function testANotificationNotYetDueCannotBeCompleted(): void
+    {
+        $this->createTable();
+        $this->insert('2027-04-01 00:00:01');
+
+        $this->assertFalse($this->notifications()->complete(1, 7));
+    }
 }
