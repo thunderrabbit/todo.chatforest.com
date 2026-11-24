@@ -52,9 +52,11 @@ if (!empty($errors)) {
 $is_logged_in = new \Auth\IsLoggedIn($mla_database, $config);
 $is_logged_in->checkLogin($mla_request);
 
-// Pending migrations for the menu's Admin chip. Counted again here because
-// the list checkaroo() built predates its auto-apply. Admins only.
+// Pending migrations plus due notifications for the menu's Admin chip. Counted
+// again here because the list checkaroo() built predates its auto-apply.
+// Admins only.
 $admin_count = 0;
 if ($is_logged_in->isLoggedIn() && $is_logged_in->isAdmin()) {
-    $admin_count = count($dbExistaroo->getPendingMigrations());
+    $admin_count = count($dbExistaroo->getPendingMigrations())
+        + (new \Admin\Notifications($mla_database))->dueCount();
 }
